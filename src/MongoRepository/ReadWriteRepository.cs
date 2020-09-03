@@ -56,7 +56,7 @@ namespace MongoRepository
         public virtual async Task<TEntity> Add(TEntity entity)
         {
             entity = TrimStrings(entity);
-            await Collection.InsertOneAsync(entity);
+            await Collection.InsertOneAsync(entity).ConfigureAwait(false);
             return entity;
         }
 
@@ -77,7 +77,7 @@ namespace MongoRepository
                 }
             }
 
-            await Collection.InsertManyAsync(entities);
+            await Collection.InsertManyAsync(entities).ConfigureAwait(false);
         }
 
         /// <summary>	Updates the given entity asynchronously. </summary>
@@ -90,7 +90,8 @@ namespace MongoRepository
             await Collection.ReplaceOneAsync(
                  doc => EqualityComparer<TKey>.Default.Equals(doc.Id, entity.Id),
                  entity,
-                 new ReplaceOptions { IsUpsert = true });
+                 new ReplaceOptions { IsUpsert = true })
+                .ConfigureAwait(false);
             
             return entity;
         }
@@ -100,7 +101,7 @@ namespace MongoRepository
         public virtual async Task Delete(TKey id)
         {
             var filter = Builders<TEntity>.Filter.Eq("Id", id);
-            await Collection.DeleteOneAsync(filter);
+            await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
         }
         #endregion
     }

@@ -38,7 +38,7 @@ namespace MongoRepository
 		public virtual async Task<TEntity> Get(TKey id)
 		{
 			var filter = Builders<TEntity>.Filter.Eq("Id", id);
-			TEntity result = await Collection.Find(filter).FirstOrDefaultAsync();
+			TEntity result = await Collection.Find(filter).FirstOrDefaultAsync().ConfigureAwait(false);
 			return result;
 		}
 
@@ -48,7 +48,7 @@ namespace MongoRepository
 		public virtual async Task<IList<TEntity>> Get(IEnumerable<TKey> ids)
 		{
 			var filter = Builders<TEntity>.Filter.In("Id", ids);
-			IList<TEntity> result = await Collection.Find(filter).ToListAsync();
+			IList<TEntity> result = await Collection.Find(filter).ToListAsync().ConfigureAwait(false);
 			return result;
 		}
 
@@ -58,7 +58,7 @@ namespace MongoRepository
 		/// </returns>
 		public virtual async Task<IList<TEntity>> GetAll()
 		{
-			IList<TEntity> result = await Collection.Find(new BsonDocument()).ToListAsync();
+			IList<TEntity> result = await Collection.Find(new BsonDocument()).ToListAsync().ConfigureAwait(false);
 			return result;
 		}
 		#endregion
