@@ -76,8 +76,9 @@ namespace MongoRepository
         {
             entity = TrimStrings(entity);
 
+            var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), entity.Id);
             await Collection.ReplaceOneAsync(
-                 doc => EqualityComparer<TKey>.Default.Equals(doc.Id, entity.Id),
+                 filter,
                  entity,
                  new ReplaceOptions { IsUpsert = true })
                 .ConfigureAwait(false);
