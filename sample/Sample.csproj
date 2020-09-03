@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MongoRepository\MongoRepository.csproj" />
+    <ProjectReference Include="..\src\MongoRepository\MongoRepository.csproj" />
   </ItemGroup>
 
 
