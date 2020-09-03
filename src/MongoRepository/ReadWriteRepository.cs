@@ -12,8 +12,6 @@ namespace MongoRepository
 		IReadWriteRepository<TEntity, TKey>
 		where TEntity : class, IEntity<TKey>, new()
 	{
-        #region Constructors
-
         /// <summary>   Constructor. </summary>
         /// <param name="mongoOptions">   The mongoDB connection options. </param>
         protected ReadWriteRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
@@ -22,17 +20,10 @@ namespace MongoRepository
             Collection = context.Collection(false);
         }
 
-        #endregion
-
-        #region Properties
-
         /// <summary>   Gets the mongoDB collection. </summary>
         /// <value> The mongoDB collection. </value>
         public override IMongoCollection<TEntity> Collection { get; }
 
-        #endregion
-
-        #region Methods
 
         private static TEntity TrimStrings(TEntity entity)
         {
@@ -47,9 +38,7 @@ namespace MongoRepository
             }
             return entity;
         }
-        #endregion
 
-        #region IReadWriteRepository
         /// <summary>	Adds entity asynchronously. </summary>
         /// <param name="entity">	The entity to add. </param>
         /// <returns>	A TEntity. </returns>
@@ -103,6 +92,5 @@ namespace MongoRepository
             var filter = Builders<TEntity>.Filter.Eq("Id", id);
             await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
         }
-        #endregion
     }
 }

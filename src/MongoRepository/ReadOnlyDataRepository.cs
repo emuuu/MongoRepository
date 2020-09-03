@@ -12,8 +12,6 @@ namespace MongoRepository
     public abstract class ReadOnlyDataRepository<TEntity, TKey> : IReadOnlyDataRepository<TEntity, TKey>
 		where TEntity : class, IEntity<TKey>, new()
 	{
-		#region Constructors
-
 		/// <summary>   Constructor. </summary>
 		/// <param name="mongoOptions">   The mongoDB connection options. </param>
 		protected ReadOnlyDataRepository(IOptions<MongoDbOptions> mongoOptions)
@@ -22,16 +20,11 @@ namespace MongoRepository
 			Collection = context.Collection(true);
 		}
 
-		#endregion
-
-		#region Properties
 		/// <summary>   Gets the mongoDB collection. </summary>
 		/// <value> The mongoDB collection. </value>
 		public virtual IMongoCollection<TEntity> Collection { get; }
 
-		#endregion
 
-		#region IReadOnlyRepository
 		/// <summary>	Gets a t entity using the given identifier asynchronously. </summary>
 		/// <param name="id">	The Identifier to get. </param>
 		/// <returns>	A TEntity. </returns>
@@ -61,6 +54,5 @@ namespace MongoRepository
 			IList<TEntity> result = await Collection.Find(new BsonDocument()).ToListAsync().ConfigureAwait(false);
 			return result;
 		}
-		#endregion
 	}
 }

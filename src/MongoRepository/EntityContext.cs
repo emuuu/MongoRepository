@@ -7,7 +7,6 @@ namespace MongoRepository
     /// <typeparam name="TEntity">	Type of the entity. </typeparam>
     public class EntityContext<TEntity>
 	{
-		#region Constructors
 		/// <summary>   Constructor. </summary>
 		/// <param name="mongoOptions">   The mongoDB connection options. </param>
 		public EntityContext(IOptions<MongoDbOptions> mongoOptions)
@@ -23,9 +22,6 @@ namespace MongoRepository
 				_readWriteDatabase = client.GetDatabase(_entityTypeName);
 		}
 
-		#endregion
-
-		#region Properties
 
 		/// <summary>   Gets the entities type name. </summary>
 		/// <value> The entities type. </value>
@@ -46,6 +42,5 @@ namespace MongoRepository
 			else
 				return _readWriteDatabase.GetCollection<TEntity>(_entityTypeName);
 		}
-		#endregion
 	}
 }
