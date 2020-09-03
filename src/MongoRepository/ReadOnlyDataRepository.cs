@@ -30,7 +30,7 @@ namespace MongoRepository
 		/// <returns>	A TEntity. </returns>
 		public virtual async Task<TEntity> Get(TKey id)
 		{
-			var filter = Builders<TEntity>.Filter.Eq("Id", id);
+			var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
 			TEntity result = await Collection.Find(filter).FirstOrDefaultAsync().ConfigureAwait(false);
 			return result;
 		}
