@@ -29,7 +29,7 @@ namespace Sample
         {
             services.AddControllers();
             services.Configure<MongoDbOptions>(Configuration.GetSection("MongoDbOptions"));
-            services.AddTransient<IWeatherForecastRepository, WeatherForecastMongoDbRepository>();
+            services.AddScoped<IWeatherForecastRepository, WeatherForecastMongoDbRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
