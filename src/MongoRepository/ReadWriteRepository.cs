@@ -89,7 +89,7 @@ namespace MongoRepository
         /// <param name="id">	The Identifier to delete. </param>
         public virtual async Task Delete(TKey id)
         {
-            var filter = Builders<TEntity>.Filter.Eq("Id", id);
+            var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
             await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
         }
     }
