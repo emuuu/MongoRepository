@@ -4,7 +4,7 @@ Straightforward CRUD repository for MongoDB
 The main purpose of MongoRepository is to provide an as easy as possible DAL for services using MongoDB without tinkering. For each entity it will create a collection / table named after the entity.
 
 ## How to use it
-Add your connection string to [appsettings.json](https://github.com/emuuu/MongoRepository/blob/master/src/Sample/appsettings.json)
+Add your connection string to [appsettings.json](https://github.com/emuuu/MongoRepository/blob/master/sample/appsettings.json)
 ```
 {
   "MongoDbOptions": {
@@ -13,7 +13,7 @@ Add your connection string to [appsettings.json](https://github.com/emuuu/MongoR
   }
 }
 ```
-Then add an [entity](https://github.com/emuuu/MongoRepository/blob/master/src/Sample/WeatherForecast.cs) which implements IEntity<string> which basically means it has an ID field with Bson attributes
+Then add an [entity](https://github.com/emuuu/MongoRepository/blob/master/sample/WeatherForecast.cs) which implements IEntity<string> which basically means it has an ID field with Bson attributes
 ```
     public class WeatherForecast : IEntity<string>
     {
@@ -24,7 +24,7 @@ Then add an [entity](https://github.com/emuuu/MongoRepository/blob/master/src/Sa
         //...
     }
 ```
-For each entity you need a [repository](https://github.com/emuuu/MongoRepository/blob/master/src/Sample/Repositories/IWeatherForecastRepository.cs) which [implements](https://github.com/emuuu/MongoRepository/blob/master/src/Sample/Repositories/WeatherForecastRepository.cs) IReadWriteRepository<TEntity, string>. It is possible to add your own operations to the repository and of course to override the default operations.
+For each entity you need a [repository](https://github.com/emuuu/MongoRepository/blob/master/sample/Repositories/IWeatherForecastRepository.cs) which [implements](https://github.com/emuuu/MongoRepository/blob/master/sample/Repositories/WeatherForecastMongoDbRepository.cs) IReadWriteRepository<TEntity, string>. It is possible to add your own operations to the repository and of course to override the default operations.
 ```
     public interface IWeatherForecastRepository : IReadWriteRepository<WeatherForecast, string>
     {
@@ -32,9 +32,9 @@ For each entity you need a [repository](https://github.com/emuuu/MongoRepository
     }
 ```
 ```
-    public class WeatherForecastRepository : ReadWriteRepository<WeatherForecast, string>, IWeatherForecastRepository
+    public class WeatherForecastMongoDbRepository : ReadWriteRepository<WeatherForecast, string>, IWeatherForecastRepository
     {
-        public WeatherForecastRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+        public WeatherForecastMongoDbRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
         {
 
         }
@@ -48,8 +48,8 @@ For each entity you need a [repository](https://github.com/emuuu/MongoRepository
         }
     }
 ```
-Last thing to do is to [inject](https://github.com/emuuu/MongoRepository/blob/master/src/Sample/Startup.cs) your connectionstring and the repository
+Last thing to do is to [inject](https://github.com/emuuu/MongoRepository/blob/master/sample/Startup.cs) your connectionstring and the repository
 ```
   services.Configure<MongoDbOptions>(Configuration.GetSection("MongoDbOptions"));
-  services.AddTransient<IWeatherForecastRepository, WeatherForecastRepository>();
+  services.AddScoped<IWeatherForecastRepository, WeatherForecastRepository>();
 ```
