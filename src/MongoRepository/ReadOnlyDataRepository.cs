@@ -46,12 +46,18 @@ namespace MongoRepository
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page. </param>
 		/// <returns>
 		///     An enumerator that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll()
+		public virtual async Task<IList<TEntity>> GetAll(int? page = null, int? pageSize = null)
 		{
-			IList<TEntity> result = await Collection.Find(new BsonDocument()).ToListAsync().ConfigureAwait(false);
+			IList<TEntity> result = await Collection
+				.Find(new BsonDocument())
+				.Skip((page - 1) * pageSize)
+				.Limit(pageSize)
+				.ToListAsync().ConfigureAwait(false);
 			return result;
 		}
 	}

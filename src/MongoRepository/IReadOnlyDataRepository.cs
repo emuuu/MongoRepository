@@ -19,10 +19,12 @@ namespace MongoRepository
         /// <returns>	A TEntity. </returns>
         Task<IList<TEntity>> Get(IEnumerable<TKey> ids);
 
-        /// <summary>	Gets all entities in this collection. </summary>
+        /// <summary>	Gets all items in this collection asynchronously. </summary>
+        /// <param name="page">	The requested page number. </param>
+        /// <param name="pageSize">	The number of items per page. </param>
         /// <returns>
         ///     An enumerator that allows foreach to be used to process all items in this collection.
         /// </returns>
-        Task<IList<TEntity>> GetAll();
+        Task<IList<TEntity>> GetAll(int? page = null, int? pageSize = null);
     }
 }
