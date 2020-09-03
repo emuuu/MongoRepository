@@ -19,12 +19,12 @@ namespace MongoRepository
         /// <summary>	Gets all entities using the given identifiers. </summary>
         /// <param name="ids">	The Identifier to use. </param>
         /// <returns>	A TEntity. </returns>
-        Task<IEnumerable<TEntity>> Get(IEnumerable<TKey> ids);
+        Task<IList<TEntity>> Get(IEnumerable<TKey> ids);
 
         /// <summary>	Gets all entities in this collection. </summary>
         /// <returns>
         ///     An enumerator that allows foreach to be used to process all items in this collection.
         /// </returns>
-        Task<IEnumerable<TEntity>> GetAll();
+        Task<IList<TEntity>> GetAll();
     }
 }

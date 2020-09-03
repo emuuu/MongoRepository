@@ -38,29 +38,28 @@ namespace MongoRepository
 		public virtual async Task<TEntity> Get(TKey id)
 		{
 			var filter = Builders<TEntity>.Filter.Eq("Id", id);
-			return await Collection
-								 .Find(filter)
-								 .FirstOrDefaultAsync();
+			TEntity result = await Collection.Find(filter).FirstOrDefaultAsync();
+			return result;
 		}
 
 		/// <summary>	Gets a t entity using the given identifier asynchronously. </summary>
 		/// <param name="id">	The Identifier to get. </param>
 		/// <returns>	A TEntity. </returns>
-		public virtual async Task<IEnumerable<TEntity>> Get(IEnumerable<TKey> ids)
+		public virtual async Task<IList<TEntity>> Get(IEnumerable<TKey> ids)
 		{
 			var filter = Builders<TEntity>.Filter.In("Id", ids);
-			return await Collection
-								 .Find(filter)
-								 .ToListAsync();
+			IList<TEntity> result = await Collection.Find(filter).ToListAsync();
+			return result;
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <returns>
 		///     An enumerator that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IEnumerable<TEntity>> GetAll()
+		public virtual async Task<IList<TEntity>> GetAll()
 		{
-			return await Collection.Find(new BsonDocument()).ToListAsync();
+			IList<TEntity> result = await Collection.Find(new BsonDocument()).ToListAsync();
+			return result;
 		}
 		#endregion
 	}
