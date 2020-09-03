@@ -1,0 +1,107 @@
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Driver;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace MongoRepository
+{
+    /// <summary>	A mongo read/write repository. </summary>
+    /// <typeparam name="TEntity">	Type of the entity. </typeparam>
+    /// <typeparam name="TKey">   	Type of the key. </typeparam>
+    public abstract class ReadWriteRepository<TEntity, TKey> : ReadOnlyDataRepository<TEntity, TKey>,
+		IReadWriteRepository<TEntity, TKey>
+		where TEntity : class, IEntity<TKey>, new()
+	{
+        #region Constructors
+
+        /// <summary>   Constructor. </summary>
+        /// <param name="mongoOptions">   The mongoDB connection options. </param>
+        protected ReadWriteRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+		{
+            var context = new EntityContext<TEntity>(mongoOptions);
+            Collection = context.Collection(false);
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>   Gets the mongoDB collection. </summary>
+        /// <value> The mongoDB collection. </value>
+        public override IMongoCollection<TEntity> Collection { get; }
+
+        #endregion
+
+        #region Methods
+
+        private static TEntity TrimStrings(TEntity entity)
+        {
+            foreach (var property in typeof(TEntity).GetProperties())
+            {
+                if (property.PropertyType == typeof(string))
+                {
+                    var value = (string)property.GetValue(entity);
+                    if (!string.IsNullOrWhiteSpace(value))
+                        property.SetValue(entity, value.Trim());
+                }
+            }
+            return entity;
+        }
+        #endregion
+
+        #region IReadWriteRepository
+        /// <summary>	Adds entity asynchronously. </summary>
+        /// <param name="entity">	The entity to add. </param>
+        /// <returns>	A TEntity. </returns>
+        public virtual async Task<TEntity> Add(TEntity entity)
+        {
+            entity = TrimStrings(entity);
+            await Collection.InsertOneAsync(entity);
+            return entity;
+        }
+
+        /// <summary>	Adds a range asynchronously. </summary>
+        /// <param name="entities">	An IEnumerable&lt;TEntity&gt; of items to append to this. </param>
+        public virtual async Task AddRange(IEnumerable<TEntity> entities)
+        {
+            foreach (var property in typeof(TEntity).GetProperties())
+            {
+                if (property.PropertyType == typeof(string))
+                {
+                    foreach (var entity in entities)
+                    {
+                        var value = (string)property.GetValue(entity);
+                        if (!string.IsNullOrWhiteSpace(value))
+                            property.SetValue(entity, value.Trim());
+                    }
+                }
+            }
+
+            await Collection.InsertManyAsync(entities);
+        }
+
+        /// <summary>	Updates the given entity asynchronously. </summary>
+        /// <param name="entity">	The entity. </param>
+        /// <returns>	A TEntity. </returns>
+        public virtual async Task<TEntity> Update(TEntity entity)
+        {
+            entity = TrimStrings(entity);
+
+            await Collection.ReplaceOneAsync(
+                 doc => EqualityComparer<TKey>.Default.Equals(doc.Id, entity.Id),
+                 entity,
+                 new ReplaceOptions { IsUpsert = true });
+            
+            return entity;
+        }
+
+        /// <summary>	Deletes the given ID asynchronously. </summary>
+        /// <param name="id">	The Identifier to delete. </param>
+        public virtual async Task Delete(TKey id)
+        {
+            var filter = Builders<TEntity>.Filter.Eq("Id", id);
+            await Collection.DeleteOneAsync(filter);
+        }
+        #endregion
+    }
+}

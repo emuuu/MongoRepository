@@ -1,0 +1,67 @@
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace MongoRepository
+{
+    /// <summary>	A mongoDB read only repository. </summary>
+    /// <typeparam name="TEntity">	Type of the entity. </typeparam>
+    /// <typeparam name="TKey">   	Type of the key. </typeparam>
+    public abstract class ReadOnlyDataRepository<TEntity, TKey> : IReadOnlyDataRepository<TEntity, TKey>
+		where TEntity : class, IEntity<TKey>, new()
+	{
+		#region Constructors
+
+		/// <summary>   Constructor. </summary>
+		/// <param name="mongoOptions">   The mongoDB connection options. </param>
+		protected ReadOnlyDataRepository(IOptions<MongoDbOptions> mongoOptions)
+		{
+			var context = new EntityContext<TEntity>(mongoOptions);
+			Collection = context.Collection(true);
+		}
+
+		#endregion
+
+		#region Properties
+		/// <summary>   Gets the mongoDB collection. </summary>
+		/// <value> The mongoDB collection. </value>
+		public virtual IMongoCollection<TEntity> Collection { get; }
+
+		#endregion
+
+		#region IReadOnlyRepository
+		/// <summary>	Gets a t entity using the given identifier asynchronously. </summary>
+		/// <param name="id">	The Identifier to get. </param>
+		/// <returns>	A TEntity. </returns>
+		public virtual async Task<TEntity> Get(TKey id)
+		{
+			var filter = Builders<TEntity>.Filter.Eq("Id", id);
+			return await Collection
+								 .Find(filter)
+								 .FirstOrDefaultAsync();
+		}
+
+		/// <summary>	Gets a t entity using the given identifier asynchronously. </summary>
+		/// <param name="id">	The Identifier to get. </param>
+		/// <returns>	A TEntity. </returns>
+		public virtual async Task<IEnumerable<TEntity>> Get(IEnumerable<TKey> ids)
+		{
+			var filter = Builders<TEntity>.Filter.In("Id", ids);
+			return await Collection
+								 .Find(filter)
+								 .ToListAsync();
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <returns>
+		///     An enumerator that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IEnumerable<TEntity>> GetAll()
+		{
+			return await Collection.Find(new BsonDocument()).ToListAsync();
+		}
+		#endregion
+	}
+}
