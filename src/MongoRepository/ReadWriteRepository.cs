@@ -25,6 +25,9 @@ namespace MongoRepository
         public override IMongoCollection<TEntity> Collection { get; }
 
 
+        /// <summary>	Avoids leading or trailing whitespaces in string values. </summary>
+        /// <param name="entity">	The entity to trim. </param>
+        /// <returns>	A TEntity. </returns>
         private static TEntity TrimStrings(TEntity entity)
         {
             foreach (var property in typeof(TEntity).GetProperties())
