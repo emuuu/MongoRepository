@@ -28,7 +28,7 @@ namespace Sample.Controllers
             {
                 pageSize = 10;
             }
-            return Ok(await _weatherRepository.GetAll(page, pageSize));
+            return Ok(await _weatherRepository.GetAll(page: page, pageSize: pageSize));
         }
 
         [HttpPost(Name = nameof(CreateWeatherForecast))]
