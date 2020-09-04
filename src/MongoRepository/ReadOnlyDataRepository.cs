@@ -55,6 +55,15 @@ namespace MongoRepository
 		/// </returns>
 		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null)
 		{
+			if (page.HasValue && page < 1)
+			{
+				page = 1;
+			}
+			if (pageSize.HasValue && pageSize < 1)
+			{
+				pageSize = 1;
+			}
+
 			IList<TEntity> result = await Collection
 				.Find(filterDefinition ?? new BsonDocument())
 				.Skip((page - 1) * pageSize)
