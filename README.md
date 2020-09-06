@@ -24,11 +24,11 @@ Then add an [entity](https://github.com/emuuu/MongoRepository/blob/master/sample
         //...
     }
 ```
-For each entity you need a [repository](https://github.com/emuuu/MongoRepository/blob/master/sample/Repositories/IWeatherForecastRepository.cs) which [implements](https://github.com/emuuu/MongoRepository/blob/master/sample/Repositories/WeatherForecastMongoDbRepository.cs) IReadWriteRepository<TEntity, string>. It is possible to add your own operations to the repository and of course to override the default operations.
+For each entity you need a [repository](https://github.com/emuuu/MongoRepository/blob/master/sample/Repositories/IWeatherForecastRepository.cs) which [implements](https://github.com/emuuu/MongoRepository/blob/master/sample/Repositories/WeatherForecastMongoDbRepository.cs) IReadWriteRepository<TEntity, string>. It is possible to add your own methods to the repository and of course to override the default ones.
 ```
     public interface IWeatherForecastRepository : IReadWriteRepository<WeatherForecast, string>
     {
-      Task<WeatherForecast> GetAllWeatherForecastsWith16Degree();
+      Task<IList<WeatherForecast>> GetAllWeatherForecastsWith16Degree();
     }
 ```
 ```
@@ -39,7 +39,7 @@ For each entity you need a [repository](https://github.com/emuuu/MongoRepository
 
         }
         
-        public async Task<WeatherForecast> GetAllWeatherForecastsWith16Degree()
+        public async Task<IList<WeatherForecast>> GetAllWeatherForecastsWith16Degree()
         {
           var filter = Builders<WeatherForecast>.Filter.Eq("temperatureC", 16);
           return await Collection
