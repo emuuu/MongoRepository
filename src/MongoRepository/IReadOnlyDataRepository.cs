@@ -29,5 +29,15 @@ namespace MongoRepository
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
         Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null);
+
+        /// <summary>	Gets all items in this collection asynchronously. </summary>
+        /// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
+        /// <param name="jsonSortingDefinition">	The sorting definition in a json string for the result. Defaults to sort ascending by Id.</param>
+        /// <param name="page">	The requested page number. </param>
+        /// <param name="pageSize">	The number of items per page.</param>
+        /// <returns>
+        ///     An list that allows foreach to be used to process all items in this collection.
+        /// </returns>
+        Task<IList<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null);
     }
 }

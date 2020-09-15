@@ -72,5 +72,30 @@ namespace MongoRepository
 				.ToListAsync().ConfigureAwait(false);
 			return result;
 		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
+		/// <param name="jsonSortingDefinition">	The sorting definition in a json string for the result. Defaults to sort ascending by Id.</param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null)
+		{
+			JsonFilterDefinition<TEntity> filter = null;
+			if (!string.IsNullOrEmpty(jsonFilterDefinition))
+			{
+				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
+			}
+
+			JsonSortDefinition<TEntity> sorting = null;
+			if (!string.IsNullOrEmpty(jsonSortingDefinition))
+			{
+				sorting = new JsonSortDefinition<TEntity>(jsonSortingDefinition);
+			}
+
+			return await GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize);
+		}
 	}
 }
