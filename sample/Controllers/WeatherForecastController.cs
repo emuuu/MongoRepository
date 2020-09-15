@@ -22,13 +22,13 @@ namespace Sample.Controllers
         }
 
         [HttpGet(Name = nameof(GetAllWeatherForecasts))]
-        public async Task<IActionResult> GetAllWeatherForecasts([FromQuery] int? page, [FromQuery] int? pageSize)
+        public async Task<IActionResult> GetAllWeatherForecasts([FromQuery] string jsonFilterDefinition = null, [FromQuery] string jsonSortingDefinition = null, [FromQuery] int? page = null, [FromQuery] int? pageSize = null)
         {
             if(page.HasValue && !pageSize.HasValue)
             {
                 pageSize = 10;
             }
-            return Ok(await _weatherRepository.GetAll(page: page, pageSize: pageSize));
+            return Ok(await _weatherRepository.GetAll(jsonFilterDefinition: jsonFilterDefinition, jsonSortingDefinition: jsonSortingDefinition, page: page, pageSize: pageSize));
         }
 
         [HttpPost(Name = nameof(CreateWeatherForecast))]
