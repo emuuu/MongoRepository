@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,11 +26,19 @@ namespace Sample.Controllers
         [HttpGet(Name = nameof(GetAllWeatherForecasts))]
         public async Task<IActionResult> GetAllWeatherForecasts([FromQuery] string jsonFilterDefinition = null, [FromQuery] string jsonSortingDefinition = null, [FromQuery] int? page = null, [FromQuery] int? pageSize = null)
         {
-            if(page.HasValue && !pageSize.HasValue)
+            if (page.HasValue && !pageSize.HasValue)
             {
                 pageSize = 10;
             }
             return Ok(await _weatherRepository.GetAll(jsonFilterDefinition: jsonFilterDefinition, jsonSortingDefinition: jsonSortingDefinition, page: page, pageSize: pageSize));
+        }
+
+
+        [HttpGet]
+        [Route("degrees/{degree:int}", Name = nameof(GetWeatherForecastsByDegreeOrderedByDate))]
+        public async Task<IActionResult> GetWeatherForecastsByDegreeOrderedByDate(int degree)
+        {
+            return Ok(await _weatherRepository.GetAll(x => x.TemperatureC == degree, x => x.Date));
         }
 
         [HttpPost(Name = nameof(CreateWeatherForecast))]
