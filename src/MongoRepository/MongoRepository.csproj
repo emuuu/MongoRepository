@@ -14,9 +14,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <PackageReleaseNotes>Added support for jsonFilterDefinition and jsonSortingDefinition</PackageReleaseNotes>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <PackageReleaseNotes>Added support for filtering / sorting with linq expression</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
