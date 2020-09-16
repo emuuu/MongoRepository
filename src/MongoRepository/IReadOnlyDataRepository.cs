@@ -1,5 +1,7 @@
 ﻿using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace MongoRepository
@@ -39,5 +41,15 @@ namespace MongoRepository
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
         Task<IList<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null);
+
+        /// <summary>	Gets all items in this collection asynchronously. </summary>
+        /// <param name="filter">	A linq expression to filter the results. </param>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <param name="page">	The requested page number. </param>
+        /// <param name="pageSize">	The number of items per page.</param>
+        /// <returns>
+        ///     An list that allows foreach to be used to process all items in this collection.
+        /// </returns>
+		Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null);
     }
 }
