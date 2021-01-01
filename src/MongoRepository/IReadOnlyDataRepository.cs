@@ -28,11 +28,6 @@ namespace MongoRepository
         Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null);
 
         /// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
-        /// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
-        /// <returns>	A TEntity. </returns>
-        Task<TEntity> Get(string jsonFilterDefinition);
-
-        /// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
         /// <param name="filter">	A linq expression to filter the results. </param>
         /// <returns>	A TEntity. </returns>
         Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter);

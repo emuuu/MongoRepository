@@ -14,9 +14,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.3</Version>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <PackageReleaseNotes>Added get FirstOrDefault item matching a given filter</PackageReleaseNotes>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <PackageReleaseNotes>Removed geting FirstOrDefault item with json filter due to overload conflict with Get(id)</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
