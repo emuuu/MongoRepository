@@ -49,6 +49,44 @@ namespace MongoRepository
 			return result;
 		}
 
+		/// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
+		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
+		/// <returns>	A TEntity. </returns>
+		public virtual async Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null)
+		{
+			TEntity result = await Collection
+				.Find(filterDefinition ?? new BsonDocument())
+				.FirstOrDefaultAsync().ConfigureAwait(false);
+			return result;
+		}
+
+		/// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
+		/// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
+		/// <returns>	A TEntity. </returns>
+		public virtual async Task<TEntity> Get(string jsonFilterDefinition)
+		{
+			JsonFilterDefinition<TEntity> filter = null;
+			if (!string.IsNullOrEmpty(jsonFilterDefinition))
+			{
+				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
+			}
+
+			return await Get(filterDefinition: filter);
+		}
+
+		/// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
+		/// <param name="filter">	A linq expression to filter the results. </param>
+		/// <returns>	A TEntity. </returns>
+		public virtual async Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter)
+		{
+			TEntity result = await Collection
+				.AsQueryable()
+				.Where(filter)
+				.FirstOrDefaultAsync().ConfigureAwait(false);
+
+			return result;
+		}
+
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
 		/// <param name="sortDefinition">	The sorting definition for the result. Defaults to sort ascending by Id.</param>

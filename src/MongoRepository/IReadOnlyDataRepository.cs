@@ -22,6 +22,21 @@ namespace MongoRepository
         /// <returns>	A TEntity. </returns>
         Task<IList<TEntity>> Get(IEnumerable<TKey> ids);
 
+        /// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
+        /// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
+        /// <returns>	A TEntity. </returns>
+        Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null);
+
+        /// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
+        /// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
+        /// <returns>	A TEntity. </returns>
+        Task<TEntity> Get(string jsonFilterDefinition);
+
+        /// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
+        /// <param name="filter">	A linq expression to filter the results. </param>
+        /// <returns>	A TEntity. </returns>
+        Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter);
+
         /// <summary>	Gets all items in this collection asynchronously. </summary>
         /// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
         /// <param name="sortDefinition">	The sorting definition for the result. Defaults to sort ascending by Id.</param>
