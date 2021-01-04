@@ -13,8 +13,10 @@ Add your connection string to [appsettings.json](https://github.com/emuuu/MongoR
   }
 }
 ```
-Then add an [entity](https://github.com/emuuu/MongoRepository/blob/master/sample/WeatherForecast.cs) which implements IEntity<string> which basically means it has an ID field with Bson attributes
+Then add an [entity](https://github.com/emuuu/MongoRepository/blob/master/sample/WeatherForecast.cs) which implements IEntity<string> which basically means it has an ID field with Bson attributes. By default the entities type name is used as name for the database and the collection as well. If you desire to use a database and/or a collection whose names differ from this you can use the referring attributes.
 ```
+    [EntityDatabase("WeatherForecastDB")]
+    [EntityCollection("WeatherForecastCollection")]
     public class WeatherForecast : IEntity<string>
     {
         [BsonId]
