@@ -14,9 +14,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.4</Version>
-    <AssemblyVersion>1.0.4.0</AssemblyVersion>
-    <PackageReleaseNotes>Removed geting FirstOrDefault item with json filter due to overload conflict with Get(id)</PackageReleaseNotes>
+    <Version>1.0.5</Version>
+    <AssemblyVersion>1.0.5.0</AssemblyVersion>
+    <PackageReleaseNotes>Added attributes to entity to enable using databases and collections which names differ from entities type name</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

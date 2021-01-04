@@ -5,6 +5,8 @@ using System;
 
 namespace Sample
 {
+    [EntityDatabase("WeatherForecastDB")]
+    [EntityCollection("WeatherForecastCollection")]
     public class WeatherForecast : IEntity<string>
     {
         [BsonId]
