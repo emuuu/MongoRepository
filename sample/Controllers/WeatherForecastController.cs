@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sample.Repositories;
+using Newtonsoft.Json;
 
 namespace Sample.Controllers
 {
@@ -26,10 +27,24 @@ namespace Sample.Controllers
         [HttpGet(Name = nameof(GetAllWeatherForecasts))]
         public async Task<IActionResult> GetAllWeatherForecasts([FromQuery] string jsonFilterDefinition = null, [FromQuery] string jsonSortingDefinition = null, [FromQuery] int? page = null, [FromQuery] int? pageSize = null)
         {
-            if (page.HasValue && !pageSize.HasValue)
-            {
+            if (!page.HasValue)
+                page = 1;
+
+            if (!pageSize.HasValue)
                 pageSize = 10;
-            }
+
+            var allItemCount = await _weatherRepository.Count(jsonFilterDefinition: jsonFilterDefinition);
+            var paginationMetadata = new
+            {
+                totalCount = allItemCount,
+                pageSize = pageSize,
+                currentPage = page,
+                totalPages = (int)Math.Ceiling(allItemCount / (double)pageSize)
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(paginationMetadata));
+
+
             return Ok(await _weatherRepository.GetAll(jsonFilterDefinition: jsonFilterDefinition, jsonSortingDefinition: jsonSortingDefinition, page: page, pageSize: pageSize));
         }
 
