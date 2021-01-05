@@ -14,9 +14,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.5</Version>
-    <AssemblyVersion>1.0.5.0</AssemblyVersion>
-    <PackageReleaseNotes>Added attributes to entity to enable using databases and collections which names differ from entities type name</PackageReleaseNotes>
+    <Version>1.0.6</Version>
+    <AssemblyVersion>1.0.6.0</AssemblyVersion>
+    <PackageReleaseNotes>Added counting for a given filter or the whole collection</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

@@ -142,8 +142,8 @@ namespace MongoRepository
 				.OrderBy(sorting)
 				.ToListAsync().ConfigureAwait(false);
 
-			if(page.HasValue && pageSize.HasValue)
-            {
+			if (page.HasValue && pageSize.HasValue)
+			{
 				if (page < 1)
 				{
 					page = 1;
@@ -158,6 +158,58 @@ namespace MongoRepository
 				.Take(pageSize.Value)
 				.ToList();
 			}
+			return result;
+		}
+
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
+		/// <param name="sortDefinition">	The sorting definition for the result. Defaults to sort ascending by Id.</param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<long> Count(FilterDefinition<TEntity> filterDefinition = null)
+		{
+			var result = await Collection
+				.Find(filterDefinition ?? new BsonDocument())
+				.CountDocumentsAsync().ConfigureAwait(false);
+			return result;
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
+		/// <param name="jsonSortingDefinition">	The sorting definition in a json string for the result. Defaults to sort ascending by Id.</param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<long> Count(string jsonFilterDefinition)
+		{
+			JsonFilterDefinition<TEntity> filter = null;
+			if (!string.IsNullOrEmpty(jsonFilterDefinition))
+			{
+				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
+			}
+			return await Count(filterDefinition: filter);
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="filter">	A linq expression to filter the results. </param>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<long> Count<TProperty>(Expression<Func<TEntity, bool>> filter)
+		{
+			var result = await Collection
+				.AsQueryable()
+				.Where(filter)
+				.LongCountAsync().ConfigureAwait(false);
 			return result;
 		}
 	}
