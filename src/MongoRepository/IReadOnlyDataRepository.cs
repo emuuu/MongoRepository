@@ -37,7 +37,7 @@ namespace MongoRepository
         /// <returns>
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
-        Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null);
+        Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition);
 
         /// <summary>	Gets all items in this collection asynchronously. </summary>
         /// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
@@ -45,7 +45,7 @@ namespace MongoRepository
         /// <returns>
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
-        Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null);
+        Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition);
 
         /// <summary>	Gets all items in this collection asynchronously. </summary>
         /// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>

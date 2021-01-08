@@ -78,7 +78,7 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null)
+		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition)
 		{
 			IList<TEntity> result = await Collection
 				.Find(filterDefinition ?? new BsonDocument())
@@ -92,7 +92,7 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null)
+		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition)
 		{
 			IList<TEntity> result = await Collection
 				.Find(filterDefinition ?? new BsonDocument())
