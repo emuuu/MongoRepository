@@ -14,9 +14,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.6</Version>
-    <AssemblyVersion>1.0.6.0</AssemblyVersion>
-    <PackageReleaseNotes>Added counting for a given filter or the whole collection</PackageReleaseNotes>
+    <Version>1.0.7</Version>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
+    <PackageReleaseNotes>Added overload for getting entities without sorting and/or pagination</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

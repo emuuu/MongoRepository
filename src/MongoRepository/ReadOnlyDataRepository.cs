@@ -75,6 +75,34 @@ namespace MongoRepository
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null)
+		{
+			IList<TEntity> result = await Collection
+				.Find(filterDefinition ?? new BsonDocument())
+				.ToListAsync().ConfigureAwait(false);
+			return result;
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
+		/// <param name="sortDefinition">	The sorting definition for the result. Defaults to sort ascending by Id.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null)
+		{
+			IList<TEntity> result = await Collection
+				.Find(filterDefinition ?? new BsonDocument())
+				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
+				.ToListAsync().ConfigureAwait(false);
+			return result;
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
 		/// <param name="sortDefinition">	The sorting definition for the result. Defaults to sort ascending by Id.</param>
 		/// <param name="page">	The requested page number. </param>
 		/// <param name="pageSize">	The number of items per page.</param>
@@ -103,6 +131,45 @@ namespace MongoRepository
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll(string jsonFilterDefinition)
+		{
+			JsonFilterDefinition<TEntity> filter = null;
+			if (!string.IsNullOrEmpty(jsonFilterDefinition))
+			{
+				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
+			}
+
+			return await GetAll(filterDefinition: filter);
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
+		/// <param name="jsonSortingDefinition">	The sorting definition in a json string for the result. Defaults to sort ascending by Id.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition)
+		{
+			JsonFilterDefinition<TEntity> filter = null;
+			if (!string.IsNullOrEmpty(jsonFilterDefinition))
+			{
+				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
+			}
+
+			JsonSortDefinition<TEntity> sorting = null;
+			if (!string.IsNullOrEmpty(jsonSortingDefinition))
+			{
+				sorting = new JsonSortDefinition<TEntity>(jsonSortingDefinition);
+			}
+
+			return await GetAll(filterDefinition: filter, sortDefinition: sorting);
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
 		/// <param name="jsonSortingDefinition">	The sorting definition in a json string for the result. Defaults to sort ascending by Id.</param>
 		/// <param name="page">	The requested page number. </param>
 		/// <param name="pageSize">	The number of items per page.</param>
@@ -124,6 +191,36 @@ namespace MongoRepository
 			}
 
 			return await GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize);
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="filter">	A linq expression to filter the results. </param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter)
+		{
+			IList<TEntity> result = await Collection
+				.AsQueryable()
+				.Where(filter)
+				.ToListAsync().ConfigureAwait(false);
+			return result;
+		}
+
+		/// <summary>	Gets all items in this collection asynchronously. </summary>
+		/// <param name="filter">	A linq expression to filter the results. </param>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting)
+		{
+			IList<TEntity> result = await Collection
+				.AsQueryable()
+				.Where(filter)
+				.OrderBy(sorting)
+				.ToListAsync().ConfigureAwait(false);
+			return result;
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
