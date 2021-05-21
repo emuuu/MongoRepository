@@ -258,6 +258,57 @@ namespace MongoRepository
 			return result;
 		}
 
+		/// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
+		/// <param name="filter">	A linq expression to filter the results. </param>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting)
+		{
+			IList<TEntity> result = await Collection
+				.AsQueryable()
+				.Where(filter)
+				.OrderByDescending(sorting)
+				.ToListAsync().ConfigureAwait(false);
+			return result;
+		}
+
+		/// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
+		/// <param name="filter">	A linq expression to filter the results. </param>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
+		{
+			IList<TEntity> result = await Collection
+				.AsQueryable()
+				.Where(filter)
+				.OrderByDescending(sorting)
+				.ToListAsync().ConfigureAwait(false);
+
+			if (page.HasValue && pageSize.HasValue)
+			{
+				if (page < 1)
+				{
+					page = 1;
+				}
+				if (pageSize < 1)
+				{
+					pageSize = 1;
+				}
+
+				result = result
+				.Skip((page.Value - 1) * pageSize.Value)
+				.Take(pageSize.Value)
+				.ToList();
+			}
+			return result;
+		}
+
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>

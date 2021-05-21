@@ -14,9 +14,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.8</Version>
-    <AssemblyVersion>1.0.8.0</AssemblyVersion>
-    <PackageReleaseNotes>Updated overload usability</PackageReleaseNotes>
+    <Version>1.0.9</Version>
+    <AssemblyVersion>1.0.9.0</AssemblyVersion>
+    <PackageReleaseNotes>Added GetAllDescending</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
