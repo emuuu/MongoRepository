@@ -113,6 +113,22 @@ namespace MongoRepository
         /// <returns>
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
+		Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting);
+
+        /// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <param name="page">	The requested page number. </param>
+        /// <param name="pageSize">	The number of items per page.</param>
+        /// <returns>
+        ///     An list that allows foreach to be used to process all items in this collection.
+        /// </returns>
+		Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null);
+
+        /// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <returns>
+        ///     An list that allows foreach to be used to process all items in this collection.
+        /// </returns>
 		Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting);
 
         /// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
