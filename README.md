@@ -43,7 +43,7 @@ For each entity you need a [repository](https://github.com/emuuu/MongoRepository
         
         public async Task<IList<WeatherForecast>> GetAllWeatherForecastsWith16Degree()
         {
-          var filter = Builders<WeatherForecast>.Filter.Eq("temperatureC", 16);
+          var filter = Builders<WeatherForecast>.Filter.Eq(nameof(WeatherForecast.TemperatureC), 16);
           return await Collection
             .Find(filter)
             .ToListAsync();
