@@ -32,6 +32,7 @@ namespace MongoRepository
         /// <returns>	A TEntity. </returns>
         Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter);
 
+
         /// <summary>	Gets all items in this collection asynchronously. </summary>
         /// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
         /// <returns>
@@ -56,6 +57,7 @@ namespace MongoRepository
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
         Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null);
+
 
         /// <summary>	Gets all items in this collection asynchronously. </summary>
         /// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
@@ -82,20 +84,24 @@ namespace MongoRepository
         /// </returns>
         Task<IList<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null);
 
-        /// <summary>	Gets all items in this collection asynchronously. </summary>
-        /// <param name="filter">	A linq expression to filter the results. </param>
-        /// <returns>
-        ///     An list that allows foreach to be used to process all items in this collection.
-        /// </returns>
-		Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter);
 
         /// <summary>	Gets all items in this collection asynchronously. </summary>
         /// <param name="filter">	A linq expression to filter the results. </param>
-		/// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <param name="page">	The requested page number. </param>
+        /// <param name="pageSize">	The number of items per page.</param>
         /// <returns>
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
-		Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting);
+		Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null);
+
+        /// <summary>	Gets all items in this collection in asynchronously. </summary>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <param name="page">	The requested page number. </param>
+        /// <param name="pageSize">	The number of items per page.</param>
+        /// <returns>
+        ///     An list that allows foreach to be used to process all items in this collection.
+        /// </returns>
+		Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null);
 
         /// <summary>	Gets all items in this collection asynchronously. </summary>
         /// <param name="filter">	A linq expression to filter the results. </param>
@@ -107,29 +113,24 @@ namespace MongoRepository
         /// </returns>
 		Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null);
 
-        /// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
-        /// <param name="filter">	A linq expression to filter the results. </param>
-		/// <param name="sorting">	A linq expression to sort the results.</param>
-        /// <returns>
-        ///     An list that allows foreach to be used to process all items in this collection.
-        /// </returns>
-		Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting);
 
         /// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
-		/// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <param name="filter">	A linq expression to filter the results. </param>
         /// <param name="page">	The requested page number. </param>
         /// <param name="pageSize">	The number of items per page.</param>
         /// <returns>
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
-		Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null);
+        Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null);
 
         /// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
-		/// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <param name="sorting">	A linq expression to sort the results.</param>
+        /// <param name="page">	The requested page number. </param>
+        /// <param name="pageSize">	The number of items per page.</param>
         /// <returns>
         ///     An list that allows foreach to be used to process all items in this collection.
         /// </returns>
-		Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting);
+        Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null);
 
         /// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
         /// <param name="filter">	A linq expression to filter the results. </param>

@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 
 namespace MongoRepository
 {
-    /// <summary>	A mongoDB read only repository. </summary>
-    /// <typeparam name="TEntity">	Type of the entity. </typeparam>
-    /// <typeparam name="TKey">   	Type of the key. </typeparam>
-    public abstract class ReadOnlyDataRepository<TEntity, TKey> : IReadOnlyDataRepository<TEntity, TKey>
+	/// <summary>	A mongoDB read only repository. </summary>
+	/// <typeparam name="TEntity">	Type of the entity. </typeparam>
+	/// <typeparam name="TKey">   	Type of the key. </typeparam>
+	public abstract class ReadOnlyDataRepository<TEntity, TKey> : IReadOnlyDataRepository<TEntity, TKey>
 		where TEntity : class, IEntity<TKey>, new()
 	{
 		/// <summary>   Constructor. </summary>
@@ -73,6 +73,7 @@ namespace MongoRepository
 			return result;
 		}
 
+
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
 		/// <returns>
@@ -111,23 +112,35 @@ namespace MongoRepository
 		/// </returns>
 		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null)
 		{
-			if (page.HasValue && page < 1)
+			IList<TEntity> result;
+			if (page.HasValue && pageSize.HasValue)
 			{
-				page = 1;
-			}
-			if (pageSize.HasValue && pageSize < 1)
-			{
-				pageSize = 1;
-			}
+				if (page < 1)
+				{
+					page = 1;
+				}
+				if (pageSize < 1)
+				{
+					pageSize = 1;
+				}
 
-			IList<TEntity> result = await Collection
+				result = await Collection
 				.Find(filterDefinition ?? new BsonDocument())
 				.Skip((page - 1) * pageSize)
 				.Limit(pageSize)
 				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
 				.ToListAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				result = await Collection
+				.Find(filterDefinition ?? new BsonDocument())
+				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
+				.ToListAsync().ConfigureAwait(false);
+			}
 			return result;
 		}
+
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <param name="jsonFilterDefinition">	A definition to filter in a json string the results. Defaults to an empty filter.</param>
@@ -193,33 +206,82 @@ namespace MongoRepository
 			return await GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize);
 		}
 
-		/// <summary>	Gets all items in this collection asynchronously. </summary>
-		/// <param name="filter">	A linq expression to filter the results. </param>
-		/// <returns>
-		///     An list that allows foreach to be used to process all items in this collection.
-		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter)
-		{
-			IList<TEntity> result = await Collection
-				.AsQueryable()
-				.Where(filter)
-				.ToListAsync().ConfigureAwait(false);
-			return result;
-		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
 		/// <param name="filter">	A linq expression to filter the results. </param>
-		/// <param name="sorting">	A linq expression to sort the results.</param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting)
+		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null)
 		{
-			IList<TEntity> result = await Collection
-				.AsQueryable()
-				.Where(filter)
-				.OrderBy(sorting)
-				.ToListAsync().ConfigureAwait(false);
+			IList<TEntity> result;
+			if (page.HasValue && pageSize.HasValue)
+			{
+				if (page < 1)
+				{
+					page = 1;
+				}
+				if (pageSize < 1)
+				{
+					pageSize = 1;
+				}
+
+				result = await Collection
+					.AsQueryable()
+					.Where(filter)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				result = await Collection
+					.AsQueryable()
+					.Where(filter)
+					.ToListAsync().ConfigureAwait(false);
+			}
+			return result;
+		}
+
+		/// <summary>	Gets all items in this collection in asynchronously. </summary>
+		/// <param name="sorting">	A linq expression to sort the results.</param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
+		/// <returns>
+		///     An list that allows foreach to be used to process all items in this collection.
+		/// </returns>
+		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
+		{
+			IList<TEntity> result;
+			if (page.HasValue && pageSize.HasValue)
+			{
+				if (page < 1)
+				{
+					page = 1;
+				}
+				if (pageSize < 1)
+				{
+					pageSize = 1;
+				}
+
+				result = await Collection
+					.AsQueryable()
+					.OrderBy(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				result = await Collection
+					.AsQueryable()
+					.OrderBy(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
 			return result;
 		}
 
@@ -233,12 +295,7 @@ namespace MongoRepository
 		/// </returns>
 		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
 		{
-			IList<TEntity> result = await Collection
-				.AsQueryable()
-				.Where(filter)
-				.OrderBy(sorting)
-				.ToListAsync().ConfigureAwait(false);
-
+			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -250,25 +307,65 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = result
-				.Skip((page.Value - 1) * pageSize.Value)
-				.Take(pageSize.Value)
-				.ToList();
+				result = await Collection
+					.AsQueryable()
+					.Where(filter)
+					.OrderBy(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				result = await Collection
+					.AsQueryable()
+					.Where(filter)
+					.OrderBy(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
 			}
 			return result;
 		}
 
+
 		/// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
-		/// <param name="sorting">	A linq expression to sort the results.</param>
+		/// <param name="filter">	A linq expression to filter the results. </param>
+		/// <param name="page">	The requested page number. </param>
+		/// <param name="pageSize">	The number of items per page.</param>
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting)
+		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null)
 		{
-			IList<TEntity> result = await Collection
-				.AsQueryable()
-				.OrderByDescending(sorting)
-				.ToListAsync().ConfigureAwait(false);
+			IList<TEntity> result;
+			if (page.HasValue && pageSize.HasValue)
+			{
+				if (page < 1)
+				{
+					page = 1;
+				}
+				if (pageSize < 1)
+				{
+					pageSize = 1;
+				}
+
+				result = await Collection
+					.AsQueryable()
+					.Where(filter)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				result = await Collection
+					.AsQueryable()
+					.Where(filter)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
 			return result;
 		}
 
@@ -281,11 +378,7 @@ namespace MongoRepository
 		/// </returns>
 		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
 		{
-			IList<TEntity> result = await Collection
-				.AsQueryable()
-				.OrderByDescending(sorting)
-				.ToListAsync().ConfigureAwait(false);
-
+			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -297,27 +390,22 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = result
-				.Skip((page.Value - 1) * pageSize.Value)
-				.Take(pageSize.Value)
-				.ToList();
+				result = await Collection
+					.AsQueryable()
+					.OrderByDescending(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
 			}
-			return result;
-		}
-
-		/// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
-		/// <param name="filter">	A linq expression to filter the results. </param>
-		/// <param name="sorting">	A linq expression to sort the results.</param>
-		/// <returns>
-		///     An list that allows foreach to be used to process all items in this collection.
-		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting)
-		{
-			IList<TEntity> result = await Collection
-				.AsQueryable()
-				.Where(filter)
-				.OrderByDescending(sorting)
-				.ToListAsync().ConfigureAwait(false);
+			else
+			{
+				result = await Collection
+					.AsQueryable()
+					.OrderByDescending(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
 			return result;
 		}
 
@@ -331,12 +419,7 @@ namespace MongoRepository
 		/// </returns>
 		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
 		{
-			IList<TEntity> result = await Collection
-				.AsQueryable()
-				.Where(filter)
-				.OrderByDescending(sorting)
-				.ToListAsync().ConfigureAwait(false);
-
+			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -348,10 +431,23 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = result
-				.Skip((page.Value - 1) * pageSize.Value)
-				.Take(pageSize.Value)
-				.ToList();
+				result = await Collection
+					.AsQueryable()
+				.Where(filter)
+					.OrderByDescending(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
+			}
+			else
+			{
+				result = await Collection
+					.AsQueryable()
+				.Where(filter)
+					.OrderByDescending(sorting)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync().ConfigureAwait(false);
 			}
 			return result;
 		}

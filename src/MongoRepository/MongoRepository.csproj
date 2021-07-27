@@ -14,9 +14,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.10</Version>
-    <AssemblyVersion>1.0.10.0</AssemblyVersion>
-    <PackageReleaseNotes>Added GetAllDescending without filtering</PackageReleaseNotes>
+    <Version>1.0.11</Version>
+    <AssemblyVersion>1.0.11.0</AssemblyVersion>
+    <PackageReleaseNotes>Performance update for sorted queries / tidy up for lambda expression filter/sorting</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
