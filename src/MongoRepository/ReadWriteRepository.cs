@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace MongoRepository
@@ -94,6 +97,32 @@ namespace MongoRepository
         public virtual async Task Delete(TKey id)
         {
             var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
+            await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
+        }
+
+        /// <summary>	Deletes the given ID. </summary>
+        /// <param name="filterDefinition">	A definition to filter which documents will be deleted. Defaults to an empty filter.</param>
+        public virtual async Task Delete(FilterDefinition<TEntity> filterDefinition)
+        {
+            await Collection.DeleteOneAsync(filterDefinition ?? new BsonDocument()).ConfigureAwait(false);
+        }
+
+        /// <summary>	Deletes the given ID. </summary>
+        /// <param name="jsonFilterDefinition">	A definition to filter in a json string which documents will be deleted. Defaults to an empty filter.</param>
+        public virtual async Task Delete(string jsonFilterDefinition)
+        {
+            JsonFilterDefinition<TEntity> filter = null;
+            if (!string.IsNullOrEmpty(jsonFilterDefinition))
+            {
+                filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
+            }
+            await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
+        }
+
+        /// <summary>	Deletes the given ID. </summary>
+        /// <param name="filter">	A linq expression to filter which documents will be deleted. </param>
+        public virtual async Task Delete(Expression<Func<TEntity, bool>> filter)
+        {
             await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
         }
     }

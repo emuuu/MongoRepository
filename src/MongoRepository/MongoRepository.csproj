@@ -6,17 +6,15 @@
     <PackageProjectUrl>https://github.com/emuuu/MongoRepository</PackageProjectUrl>
     <Authors>Timm Bremekamp</Authors>
     <Company>FM-Gruppe</Company>
-    <Description>Straightforward, generic, extensible CRUD repository for MongoDB
-
-</Description>
+    <Description>Added Delete with filter</Description>
     <PackageTags>mongo, mongodb, nosql, repository</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.11</Version>
-    <AssemblyVersion>1.0.11.0</AssemblyVersion>
-    <PackageReleaseNotes>Performance update for sorted queries / tidy up for lambda expression filter/sorting</PackageReleaseNotes>
+    <Version>1.0.12</Version>
+    <AssemblyVersion>1.0.12.0</AssemblyVersion>
+    <PackageReleaseNotes>Added Delete with filter</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

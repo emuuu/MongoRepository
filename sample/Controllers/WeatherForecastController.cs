@@ -79,7 +79,9 @@ namespace Sample.Controllers
         [HttpDelete("{weatherForecastID}", Name = nameof(DeleteWeatherForecast))]
         public async Task<IActionResult> DeleteWeatherForecast(string weatherForecastID)
         {
-            await _weatherRepository.Delete(weatherForecastID);
+            //await _weatherRepository.Delete(weatherForecastID);
+            await _weatherRepository.Delete(x => x.Id == weatherForecastID); //does the same as above
+
             return Ok();
         }
     }
