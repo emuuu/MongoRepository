@@ -35,10 +35,6 @@ namespace MongoRepository
         Task Delete(FilterDefinition<TEntity> filterDefinition);
 
         /// <summary>	Deletes the given ID. </summary>
-        /// <param name="jsonFilterDefinition">	A definition to filter in a json string which documents will be deleted. Defaults to an empty filter.</param>
-        Task Delete(string jsonFilterDefinition);
-
-        /// <summary>	Deletes the given ID. </summary>
         /// <param name="filter">	A linq expression to filter which documents will be deleted. </param>
         Task Delete(Expression<Func<TEntity, bool>> filter);
     }

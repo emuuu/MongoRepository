@@ -104,26 +104,14 @@ namespace MongoRepository
         /// <param name="filterDefinition">	A definition to filter which documents will be deleted. Defaults to an empty filter.</param>
         public virtual async Task Delete(FilterDefinition<TEntity> filterDefinition)
         {
-            await Collection.DeleteOneAsync(filterDefinition ?? new BsonDocument()).ConfigureAwait(false);
-        }
-
-        /// <summary>	Deletes the given ID. </summary>
-        /// <param name="jsonFilterDefinition">	A definition to filter in a json string which documents will be deleted. Defaults to an empty filter.</param>
-        public virtual async Task Delete(string jsonFilterDefinition)
-        {
-            JsonFilterDefinition<TEntity> filter = null;
-            if (!string.IsNullOrEmpty(jsonFilterDefinition))
-            {
-                filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
-            }
-            await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
+            await Collection.DeleteManyAsync(filterDefinition ?? new BsonDocument()).ConfigureAwait(false);
         }
 
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="filter">	A linq expression to filter which documents will be deleted. </param>
         public virtual async Task Delete(Expression<Func<TEntity, bool>> filter)
         {
-            await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
+            await Collection.DeleteManyAsync(filter).ConfigureAwait(false);
         }
     }
 }
