@@ -92,6 +92,30 @@ namespace MongoRepository
             return entity;
         }
 
+        public virtual async Task Update(IEnumerable<TEntity> entities)
+        {
+            foreach (var property in typeof(TEntity).GetProperties())
+            {
+                if (property.PropertyType == typeof(string))
+                {
+                    foreach (var entity in entities)
+                    {
+                        var value = (string)property.GetValue(entity);
+                        if (!string.IsNullOrWhiteSpace(value))
+                            property.SetValue(entity, value.Trim());
+                    }
+                }
+            }
+            var updates = new List<WriteModel<TEntity>>();
+            foreach (var entity in entities)
+            {
+                updates.Add(new ReplaceOneModel<TEntity>(Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), entity.Id), entity));
+            }
+            await Collection
+                .BulkWriteAsync(updates, new BulkWriteOptions() { IsOrdered = false })
+                .ConfigureAwait(false);
+        }
+
         /// <summary>	Deletes the given ID asynchronously. </summary>
         /// <param name="id">	The Identifier to delete. </param>
         public virtual async Task Delete(TKey id)

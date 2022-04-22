@@ -12,9 +12,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.13</Version>
-    <AssemblyVersion>1.0.13.0</AssemblyVersion>
-    <PackageReleaseNotes>Improved document deletion through filter</PackageReleaseNotes>
+    <Version>1.0.14</Version>
+    <AssemblyVersion>1.0.14.0</AssemblyVersion>
+    <PackageReleaseNotes>Added Update for IEnumerables</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

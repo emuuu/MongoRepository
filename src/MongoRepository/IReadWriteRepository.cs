@@ -26,6 +26,10 @@ namespace MongoRepository
         /// <returns>	A TEntity. </returns>
         Task<TEntity> Update(TEntity entity);
 
+        /// <summary>	Updates a range of entities asynchronously. </summary>
+        /// <param name="entities">	An IEnumerable&lt;TEntity&gt; of items to be updated in this collection. </param>
+        Task Update(IEnumerable<TEntity> entities);
+
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="id">	The Identifier to delete. </param>
         Task Delete(TKey id);
