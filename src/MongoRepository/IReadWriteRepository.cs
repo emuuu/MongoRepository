@@ -34,6 +34,10 @@ namespace MongoRepository
         /// <param name="id">	The Identifier to delete. </param>
         Task Delete(TKey id);
 
+        /// <summary>	Deletes the given IDs. </summary>
+        /// <param name="ids">	The Identifiers to delete. </param>
+        Task Delete(IEnumerable<TKey> ids);
+
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="filterDefinition">	A definition to filter which documents will be deleted. Defaults to an empty filter.</param>
         Task Delete(FilterDefinition<TEntity> filterDefinition);

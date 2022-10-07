@@ -124,6 +124,14 @@ namespace MongoRepository
             await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
         }
 
+        /// <summary>	Deletes the given IDs. </summary>
+        /// <param name="ids">	The Identifiers to delete. </param>
+        public virtual async Task Delete(IEnumerable<TKey> ids)
+        {
+            var filter = Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids);
+            await Collection.DeleteManyAsync(filter).ConfigureAwait(false);
+        }
+
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="filterDefinition">	A definition to filter which documents will be deleted. Defaults to an empty filter.</param>
         public virtual async Task Delete(FilterDefinition<TEntity> filterDefinition)

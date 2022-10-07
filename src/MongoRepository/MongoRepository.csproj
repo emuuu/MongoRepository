@@ -12,9 +12,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.14</Version>
-    <AssemblyVersion>1.0.14.0</AssemblyVersion>
-    <PackageReleaseNotes>Added Update for IEnumerables</PackageReleaseNotes>
+    <Version>1.0.15</Version>
+    <AssemblyVersion>1.0.15.0</AssemblyVersion>
+    <PackageReleaseNotes>Added deletion of multiple IDs at once</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
