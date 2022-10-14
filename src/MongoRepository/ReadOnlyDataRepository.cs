@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -6,7 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace MongoRepository
 {
@@ -32,45 +34,40 @@ namespace MongoRepository
 		/// <summary>	Gets a t entity using the given identifier asynchronously. </summary>
 		/// <param name="id">	The Identifier to get. </param>
 		/// <returns>	A TEntity. </returns>
-		public virtual async Task<TEntity> Get(TKey id)
+		public virtual ConfiguredTaskAwaitable<TEntity> Get(TKey id, CancellationToken cancellationToken = default)
 		{
 			var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
-			TEntity result = await Collection.Find(filter).FirstOrDefaultAsync().ConfigureAwait(false);
-			return result;
+            return Collection.Find(filter).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>	Gets a t entity using the given identifier asynchronously. </summary>
 		/// <param name="id">	The Identifier to get. </param>
 		/// <returns>	A TEntity. </returns>
-		public virtual async Task<IList<TEntity>> Get(IEnumerable<TKey> ids)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> Get(IEnumerable<TKey> ids, CancellationToken cancellationToken = default)
 		{
 			var filter = Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids);
-			IList<TEntity> result = await Collection.Find(filter).ToListAsync().ConfigureAwait(false);
-			return result;
+			return Collection.Find(filter).ToListAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
 		/// <param name="filterDefinition">	A definition to filter the results. Defaults to an empty filter.</param>
 		/// <returns>	A TEntity. </returns>
-		public virtual async Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null)
+		public virtual ConfiguredTaskAwaitable<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null, CancellationToken cancellationToken = default)
 		{
-			TEntity result = await Collection
-				.Find(filterDefinition ?? new BsonDocument())
-				.FirstOrDefaultAsync().ConfigureAwait(false);
-			return result;
+            return Collection
+                .Find(filterDefinition ?? new BsonDocument())
+				.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>	Gets first item in this collection matching a given filter asynchronously. </summary>
 		/// <param name="filter">	A linq expression to filter the results. </param>
 		/// <returns>	A TEntity. </returns>
-		public virtual async Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter)
+		public virtual ConfiguredTaskAwaitable<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 		{
-			TEntity result = await Collection
-				.AsQueryable()
+            return Collection
+                .AsQueryable()
 				.Where(filter)
-				.FirstOrDefaultAsync().ConfigureAwait(false);
-
-			return result;
+				.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 
@@ -79,12 +76,11 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result = await Collection
+			return Collection
 				.Find(filterDefinition ?? new BsonDocument())
-				.ToListAsync().ConfigureAwait(false);
-			return result;
+				.ToListAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
@@ -93,13 +89,12 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result = await Collection
-				.Find(filterDefinition ?? new BsonDocument())
+            return Collection
+                .Find(filterDefinition ?? new BsonDocument())
 				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
-				.ToListAsync().ConfigureAwait(false);
-			return result;
+				.ToListAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
@@ -110,9 +105,8 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -124,21 +118,20 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = await Collection
+				return Collection
 				.Find(filterDefinition ?? new BsonDocument())
 				.Skip((page - 1) * pageSize)
 				.Limit(pageSize)
 				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
-				.ToListAsync().ConfigureAwait(false);
+				.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				result = await Collection
-				.Find(filterDefinition ?? new BsonDocument())
+                return Collection
+                .Find(filterDefinition ?? new BsonDocument())
 				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
-				.ToListAsync().ConfigureAwait(false);
+				.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
-			return result;
 		}
 
 
@@ -147,7 +140,7 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(string jsonFilterDefinition)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll(string jsonFilterDefinition, CancellationToken cancellationToken = default)
 		{
 			JsonFilterDefinition<TEntity> filter = null;
 			if (!string.IsNullOrEmpty(jsonFilterDefinition))
@@ -155,7 +148,7 @@ namespace MongoRepository
 				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
 			}
 
-			return await GetAll(filterDefinition: filter);
+			return GetAll(filterDefinition: filter, cancellationToken);
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
@@ -164,7 +157,7 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, CancellationToken cancellationToken = default)
 		{
 			JsonFilterDefinition<TEntity> filter = null;
 			if (!string.IsNullOrEmpty(jsonFilterDefinition))
@@ -178,7 +171,7 @@ namespace MongoRepository
 				sorting = new JsonSortDefinition<TEntity>(jsonSortingDefinition);
 			}
 
-			return await GetAll(filterDefinition: filter, sortDefinition: sorting);
+			return GetAll(filterDefinition: filter, sortDefinition: sorting, cancellationToken);
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
@@ -189,7 +182,7 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
 			JsonFilterDefinition<TEntity> filter = null;
 			if (!string.IsNullOrEmpty(jsonFilterDefinition))
@@ -203,7 +196,7 @@ namespace MongoRepository
 				sorting = new JsonSortDefinition<TEntity>(jsonSortingDefinition);
 			}
 
-			return await GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize);
+			return GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize, cancellationToken);
 		}
 
 
@@ -214,9 +207,8 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -228,21 +220,20 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.Where(filter)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.Where(filter)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
-			return result;
 		}
 
 		/// <summary>	Gets all items in this collection in asynchronously. </summary>
@@ -252,9 +243,8 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -266,23 +256,22 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.OrderBy(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.OrderBy(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
-			return result;
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
@@ -293,9 +282,8 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -307,25 +295,24 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.Where(filter)
 					.OrderBy(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.Where(filter)
 					.OrderBy(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
-			return result;
 		}
 
 
@@ -336,9 +323,8 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -350,23 +336,22 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.Where(filter)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.Where(filter)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
-			return result;
 		}
 
 		/// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
@@ -376,9 +361,8 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -390,23 +374,22 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.OrderByDescending(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				result = await Collection
-					.AsQueryable()
+                return Collection
+                    .AsQueryable()
 					.OrderByDescending(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
-			return result;
 		}
 
 		/// <summary>	Gets all items in this collection in descending order asynchronously. </summary>
@@ -417,9 +400,8 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<IList<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null)
+		public virtual ConfiguredTaskAwaitable<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
-			IList<TEntity> result;
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -431,25 +413,24 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				result = await Collection
-					.AsQueryable()
-				.Where(filter)
+                return Collection
+                    .AsQueryable()
+                    .Where(filter)
 					.OrderByDescending(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
 			else
 			{
-				result = await Collection
-					.AsQueryable()
-				.Where(filter)
+                return Collection
+                    .AsQueryable()
+                    .Where(filter)
 					.OrderByDescending(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
-					.ToListAsync().ConfigureAwait(false);
+					.ToListAsync(cancellationToken).ConfigureAwait(false);
 			}
-			return result;
 		}
 
 
@@ -461,12 +442,11 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<long> Count(FilterDefinition<TEntity> filterDefinition = null)
+		public virtual ConfiguredTaskAwaitable<long> Count(FilterDefinition<TEntity> filterDefinition = null, CancellationToken cancellationToken = default)
 		{
-			var result = await Collection
+            return Collection
 				.Find(filterDefinition ?? new BsonDocument())
-				.CountDocumentsAsync().ConfigureAwait(false);
-			return result;
+				.CountDocumentsAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
@@ -477,14 +457,14 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<long> Count(string jsonFilterDefinition)
+		public virtual ConfiguredTaskAwaitable<long> Count(string jsonFilterDefinition, CancellationToken cancellationToken = default)
 		{
 			JsonFilterDefinition<TEntity> filter = null;
 			if (!string.IsNullOrEmpty(jsonFilterDefinition))
 			{
 				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
 			}
-			return await Count(filterDefinition: filter);
+			return Count(filterDefinition: filter, cancellationToken);
 		}
 
 		/// <summary>	Gets all items in this collection asynchronously. </summary>
@@ -495,13 +475,12 @@ namespace MongoRepository
 		/// <returns>
 		///     An list that allows foreach to be used to process all items in this collection.
 		/// </returns>
-		public virtual async Task<long> Count<TProperty>(Expression<Func<TEntity, bool>> filter)
+		public virtual ConfiguredTaskAwaitable<long> Count<TProperty>(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 		{
-			var result = await Collection
+            return Collection
 				.AsQueryable()
 				.Where(filter)
-				.LongCountAsync().ConfigureAwait(false);
-			return result;
+				.LongCountAsync(cancellationToken).ConfigureAwait(false);
 		}
 	}
 }

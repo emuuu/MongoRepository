@@ -59,8 +59,8 @@ namespace Sample.Controllers
         [HttpPost(Name = nameof(CreateWeatherForecast))]
         public async Task<IActionResult> CreateWeatherForecast([FromBody] WeatherForecast weatherForecast)
         {
-            var result = await _weatherRepository.Add(weatherForecast);
-            return CreatedAtRoute(nameof(GetSingleWeatherForecast), new { weatherForecastID = result.Id }, result);
+            await _weatherRepository.Add(weatherForecast);
+            return CreatedAtRoute(nameof(GetSingleWeatherForecast), new { weatherForecastID = weatherForecast.Id }, weatherForecast);
         }
 
         [HttpGet("{weatherForecastID}", Name = nameof(GetSingleWeatherForecast))]

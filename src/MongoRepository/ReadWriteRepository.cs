@@ -4,6 +4,8 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MongoRepository
@@ -31,7 +33,7 @@ namespace MongoRepository
         /// <summary>	Avoids leading or trailing whitespaces in string values. </summary>
         /// <param name="entity">	The entity to trim. </param>
         /// <returns>	A TEntity. </returns>
-        private static TEntity TrimStrings(TEntity entity)
+        private static TEntity TrimStrings(TEntity entity, CancellationToken cancellationToken = default)
         {
             foreach (var property in typeof(TEntity).GetProperties())
             {
@@ -48,16 +50,15 @@ namespace MongoRepository
         /// <summary>	Adds entity asynchronously. </summary>
         /// <param name="entity">	The entity to add. </param>
         /// <returns>	A TEntity. </returns>
-        public virtual async Task<TEntity> Add(TEntity entity)
+        public virtual ConfiguredTaskAwaitable Add(TEntity entity, CancellationToken cancellationToken = default)
         {
             entity = TrimStrings(entity);
-            await Collection.InsertOneAsync(entity).ConfigureAwait(false);
-            return entity;
+            return Collection.InsertOneAsync(entity, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>	Adds a range asynchronously. </summary>
         /// <param name="entities">	An IEnumerable&lt;TEntity&gt; of items to append to this. </param>
-        public virtual async Task AddRange(IEnumerable<TEntity> entities)
+        public virtual ConfiguredTaskAwaitable AddRange(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             foreach (var property in typeof(TEntity).GetProperties())
             {
@@ -72,27 +73,25 @@ namespace MongoRepository
                 }
             }
 
-            await Collection.InsertManyAsync(entities).ConfigureAwait(false);
+            return Collection.InsertManyAsync(entities, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>	Updates the given entity asynchronously. </summary>
         /// <param name="entity">	The entity. </param>
         /// <returns>	A TEntity. </returns>
-        public virtual async Task<TEntity> Update(TEntity entity)
+        public virtual ConfiguredTaskAwaitable<ReplaceOneResult> Update(TEntity entity, CancellationToken cancellationToken = default)
         {
             entity = TrimStrings(entity);
 
             var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), entity.Id);
-            await Collection.ReplaceOneAsync(
+            return Collection.ReplaceOneAsync(
                  filter,
                  entity,
-                 new ReplaceOptions { IsUpsert = true })
+                 new ReplaceOptions { IsUpsert = true }, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-            
-            return entity;
         }
 
-        public virtual async Task Update(IEnumerable<TEntity> entities)
+        public virtual ConfiguredTaskAwaitable<BulkWriteResult<TEntity>> Update(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             foreach (var property in typeof(TEntity).GetProperties())
             {
@@ -111,39 +110,39 @@ namespace MongoRepository
             {
                 updates.Add(new ReplaceOneModel<TEntity>(Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), entity.Id), entity));
             }
-            await Collection
-                .BulkWriteAsync(updates, new BulkWriteOptions() { IsOrdered = false })
+            return Collection
+                .BulkWriteAsync(updates, new BulkWriteOptions() { IsOrdered = false }, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
         }
 
         /// <summary>	Deletes the given ID asynchronously. </summary>
         /// <param name="id">	The Identifier to delete. </param>
-        public virtual async Task Delete(TKey id)
+        public virtual ConfiguredTaskAwaitable<DeleteResult> Delete(TKey id, CancellationToken cancellationToken = default)
         {
             var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
-            await Collection.DeleteOneAsync(filter).ConfigureAwait(false);
+            return Collection.DeleteOneAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>	Deletes the given IDs. </summary>
         /// <param name="ids">	The Identifiers to delete. </param>
-        public virtual async Task Delete(IEnumerable<TKey> ids)
+        public virtual ConfiguredTaskAwaitable<DeleteResult> Delete(IEnumerable<TKey> ids, CancellationToken cancellationToken = default)
         {
             var filter = Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids);
-            await Collection.DeleteManyAsync(filter).ConfigureAwait(false);
+            return Collection.DeleteManyAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="filterDefinition">	A definition to filter which documents will be deleted. Defaults to an empty filter.</param>
-        public virtual async Task Delete(FilterDefinition<TEntity> filterDefinition)
+        public virtual ConfiguredTaskAwaitable<DeleteResult> Delete(FilterDefinition<TEntity> filterDefinition, CancellationToken cancellationToken = default)
         {
-            await Collection.DeleteManyAsync(filterDefinition ?? new BsonDocument()).ConfigureAwait(false);
+            return Collection.DeleteManyAsync(filterDefinition ?? new BsonDocument(), cancellationToken: cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="filter">	A linq expression to filter which documents will be deleted. </param>
-        public virtual async Task Delete(Expression<Func<TEntity, bool>> filter)
+        public virtual ConfiguredTaskAwaitable<DeleteResult> Delete(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
         {
-            await Collection.DeleteManyAsync(filter).ConfigureAwait(false);
+            return Collection.DeleteManyAsync(filter, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 }

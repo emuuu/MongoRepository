@@ -12,9 +12,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.15</Version>
-    <AssemblyVersion>1.0.15.0</AssemblyVersion>
-    <PackageReleaseNotes>Added deletion of multiple IDs at once</PackageReleaseNotes>
+    <Version>1.0.16</Version>
+    <AssemblyVersion>1.0.16.0</AssemblyVersion>
+    <PackageReleaseNotes>Switched Tasks to ConfiguredTaskAwaitable and added CancellationTokens</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

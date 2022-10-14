@@ -2,7 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace MongoRepository
 {
@@ -15,35 +16,35 @@ namespace MongoRepository
         /// <summary>	Adds entity asynchronously. </summary>
         /// <param name="entity">	The entity to add. </param>
         /// <returns>	A TEntity. </returns>
-        Task<TEntity> Add(TEntity entity);
+        ConfiguredTaskAwaitable Add(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>	Adds a range of entities asynchronously. </summary>
         /// <param name="entities">	An IEnumerable&lt;TEntity&gt; of items to append to this collection. </param>
-        Task AddRange(IEnumerable<TEntity> entities);
+        ConfiguredTaskAwaitable AddRange(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
         /// <summary>	Updates the given entity asynchronously. </summary>
         /// <param name="entity">	The entity to add. </param>
         /// <returns>	A TEntity. </returns>
-        Task<TEntity> Update(TEntity entity);
+        ConfiguredTaskAwaitable<ReplaceOneResult> Update(TEntity entity, CancellationToken cancellationToken = default);
 
         /// <summary>	Updates a range of entities asynchronously. </summary>
         /// <param name="entities">	An IEnumerable&lt;TEntity&gt; of items to be updated in this collection. </param>
-        Task Update(IEnumerable<TEntity> entities);
+        ConfiguredTaskAwaitable<BulkWriteResult<TEntity>> Update(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="id">	The Identifier to delete. </param>
-        Task Delete(TKey id);
+        ConfiguredTaskAwaitable<DeleteResult> Delete(TKey id, CancellationToken cancellationToken = default);
 
         /// <summary>	Deletes the given IDs. </summary>
         /// <param name="ids">	The Identifiers to delete. </param>
-        Task Delete(IEnumerable<TKey> ids);
+        ConfiguredTaskAwaitable<DeleteResult> Delete(IEnumerable<TKey> ids, CancellationToken cancellationToken = default);
 
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="filterDefinition">	A definition to filter which documents will be deleted. Defaults to an empty filter.</param>
-        Task Delete(FilterDefinition<TEntity> filterDefinition);
+        ConfiguredTaskAwaitable<DeleteResult> Delete(FilterDefinition<TEntity> filterDefinition, CancellationToken cancellationToken = default);
 
         /// <summary>	Deletes the given ID. </summary>
         /// <param name="filter">	A linq expression to filter which documents will be deleted. </param>
-        Task Delete(Expression<Func<TEntity, bool>> filter);
+        ConfiguredTaskAwaitable<DeleteResult> Delete(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
     }
 }
