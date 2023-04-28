@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,6 +39,10 @@ namespace MongoRepository
         {
             foreach (var property in typeof(TEntity).GetProperties())
             {
+                var bsonIgnoreAttribute = (BsonIgnoreAttribute[])property.GetCustomAttributes(typeof(BsonIgnoreAttribute), false);
+                if (bsonIgnoreAttribute.Length > 0)
+                    continue;
+
                 if (property.PropertyType == typeof(string))
                 {
                     var value = (string)property.GetValue(entity);

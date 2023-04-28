@@ -12,9 +12,9 @@
     <Copyright></Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>MongoGenericRepository</PackageId>
-    <Version>1.0.18</Version>
-    <AssemblyVersion>1.0.18.0</AssemblyVersion>
-    <PackageReleaseNotes>Bumped package versions (including fix vor MongoDB vulnerability)</PackageReleaseNotes>
+    <Version>1.0.19</Version>
+    <AssemblyVersion>1.0.19.0</AssemblyVersion>
+    <PackageReleaseNotes>added fix on TrimStrings for properties with BsonIgnoreAttribute</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
