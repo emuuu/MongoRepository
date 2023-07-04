@@ -43,7 +43,7 @@ namespace MongoRepository
                 if (bsonIgnoreAttribute.Length > 0)
                     continue;
 
-                if (property.PropertyType == typeof(string))
+                if (property.CanRead && property.CanWrite && property.PropertyType == typeof(string))
                 {
                     var value = (string)property.GetValue(entity);
                     if (!string.IsNullOrWhiteSpace(value))
