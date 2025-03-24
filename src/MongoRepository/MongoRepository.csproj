@@ -1,36 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <PackageIcon>mongorepository_logo.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/emuuu/MongoRepository</PackageProjectUrl>
-    <Authors>Timm Bremekamp</Authors>
-    <Company>FM-Gruppe</Company>
-    <Description>Straightforward, generic, extensible CRUD repository for MongoDB</Description>
-    <PackageTags>mongo, mongodb, nosql, repository</PackageTags>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Copyright></Copyright>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>MongoGenericRepository</PackageId>
-    <Version>8.0.1</Version>
-    <AssemblyVersion>8.0.1.0</AssemblyVersion>
-    <PackageReleaseNotes>bumped version</PackageReleaseNotes>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
+		<PackageIcon>mongorepository_logo.png</PackageIcon>
+		<PackageProjectUrl>https://github.com/emuuu/MongoRepository</PackageProjectUrl>
+		<Authors>Timm Bremekamp</Authors>
+		<Company>FM-Gruppe</Company>
+		<Description>Straightforward, generic, extensible CRUD repository for MongoDB</Description>
+		<PackageTags>mongo, mongodb, nosql, repository</PackageTags>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>MongoGenericRepository</PackageId>
+		<Version>9.0.1</Version>
+		<AssemblyVersion>9.0.0.1</AssemblyVersion>
+		<PackageReleaseNotes>added framework multitargeting</PackageReleaseNotes>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
-    <PackageReference Include="MongoDB.Driver" Version="2.29.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.3" Condition="'$(TargetFramework)' == 'net9.0' Or '$(TargetFramework)' == 'net8.0'" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" Condition="'$(TargetFramework)' == 'net7.0'" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.1" Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'netstandard2.1'" />
+		<PackageReference Include="MongoDB.Driver" Version="3.2.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-    <None Include="..\..\mongorepository_logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\mongorepository_logo.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
 
 </Project>
