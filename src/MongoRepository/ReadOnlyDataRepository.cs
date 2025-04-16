@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -7,13 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MongoRepository
 {
-	public abstract class ReadOnlyDataRepository<TEntity, TKey> : IReadOnlyDataRepository<TEntity, TKey>
+    public abstract class ReadOnlyDataRepository<TEntity, TKey> : IReadOnlyDataRepository<TEntity, TKey>
 		where TEntity : class, IEntity<TKey>, new()
 	{
 		protected ReadOnlyDataRepository(IOptions<MongoDbOptions> mongoOptions)
@@ -50,16 +48,23 @@ namespace MongoRepository
                 .AsQueryable()
 				.Where(filter)
 				.FirstOrDefaultAsync(cancellationToken);
-		}
+        }
 
-		public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, CancellationToken cancellationToken = default)
-		{
-			return Collection
-				.Find(filterDefinition ?? new BsonDocument())
-				.ToListAsync(cancellationToken);
-		}
+        public virtual Task<List<TEntity>> GetAll(CancellationToken cancellationToken = default)
+        {
+            return Collection
+				.Find(Builders<TEntity>.Filter.Empty)
+                .ToListAsync(cancellationToken);
+        }
 
-		public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition, CancellationToken cancellationToken = default)
+        public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, CancellationToken cancellationToken = default)
+        {
+            return Collection
+                .Find(filterDefinition ?? new BsonDocument())
+                .ToListAsync(cancellationToken);
+        }
+
+        public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition, CancellationToken cancellationToken = default)
 		{
             return Collection
                 .Find(filterDefinition ?? new BsonDocument())

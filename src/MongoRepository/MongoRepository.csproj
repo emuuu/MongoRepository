@@ -11,9 +11,9 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>MongoGenericRepository</PackageId>
-		<Version>9.0.2</Version>
-		<AssemblyVersion>9.0.2.0</AssemblyVersion>
-		<PackageReleaseNotes>replaced ConfiguredTaskAwaitable with Task, made options for write operations optional, updated XML documentation, bumped version</PackageReleaseNotes>
+		<Version>9.0.3</Version>
+		<AssemblyVersion>9.0.3.0</AssemblyVersion>
+		<PackageReleaseNotes>added GetAll without optional parameters (except CancellationToken)</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

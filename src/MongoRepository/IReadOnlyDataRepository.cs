@@ -49,6 +49,12 @@ namespace MongoRepository
         Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets all entities.
+        /// </summary>
+        /// <returns>A list of entities.</returns>
+        Task<List<TEntity>> GetAll(CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Gets all entities matching the given filter.
         /// </summary>
         /// <param name="filterDefinition">A MongoDB filter definition.</param>
