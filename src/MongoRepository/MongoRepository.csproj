@@ -11,9 +11,9 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>MongoGenericRepository</PackageId>
-		<Version>9.0.3</Version>
-		<AssemblyVersion>9.0.3.0</AssemblyVersion>
-		<PackageReleaseNotes>added GetAll without optional parameters (except CancellationToken)</PackageReleaseNotes>
+		<Version>9.0.4</Version>
+		<AssemblyVersion>9.0.4.0</AssemblyVersion>
+		<PackageReleaseNotes>removed redundant GetAll overloads</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

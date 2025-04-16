@@ -55,23 +55,6 @@ namespace MongoRepository
         Task<List<TEntity>> GetAll(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Gets all entities matching the given filter.
-        /// </summary>
-        /// <param name="filterDefinition">A MongoDB filter definition.</param>
-        /// <param name="cancellationToken">A cancellation token to observe.</param>
-        /// <returns>A list of matching entities.</returns>
-        Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets all entities matching the given filter and applies the given sort definition.
-        /// </summary>
-        /// <param name="filterDefinition">A MongoDB filter definition.</param>
-        /// <param name="sortDefinition">A MongoDB sort definition.</param>
-        /// <param name="cancellationToken">A cancellation token to observe.</param>
-        /// <returns>A list of sorted, matching entities.</returns>
-        Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Gets all entities with optional filtering, sorting, and paging.
         /// </summary>
         /// <param name="filterDefinition">Optional filter definition.</param>
@@ -81,24 +64,7 @@ namespace MongoRepository
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of entities based on the provided criteria.</returns>
         /// <remarks>Page numbers less than 1 will default to 1.</remarks>
-        Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets all entities using a JSON filter definition.
-        /// </summary>
-        /// <param name="jsonFilterDefinition">A JSON string representing a filter definition.</param>
-        /// <param name="cancellationToken">A cancellation token to observe.</param>
-        /// <returns>A list of matching entities.</returns>
-        Task<List<TEntity>> GetAll(string jsonFilterDefinition, CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// Gets all entities using JSON filter and sort definitions.
-        /// </summary>
-        /// <param name="jsonFilterDefinition">JSON filter as a string.</param>
-        /// <param name="jsonSortingDefinition">JSON sort as a string.</param>
-        /// <param name="cancellationToken">A cancellation token to observe.</param>
-        /// <returns>A list of sorted, matching entities.</returns>
-        Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities using JSON filter and sort definitions with paging.
@@ -109,7 +75,7 @@ namespace MongoRepository
         /// <param name="pageSize">The number of items per page.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of paged, sorted, and filtered entities.</returns>
-        Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities matching a LINQ filter with optional paging.

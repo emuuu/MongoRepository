@@ -25,7 +25,13 @@ namespace Sample.Controllers
         }
 
         [HttpGet(Name = nameof(GetAllWeatherForecasts))]
-        public async Task<IActionResult> GetAllWeatherForecasts([FromQuery] string jsonFilterDefinition = null, [FromQuery] string jsonSortingDefinition = null, [FromQuery] int? page = null, [FromQuery] int? pageSize = null)
+        public async Task<IActionResult> GetAllWeatherForecasts()
+        {
+            return Ok(await _weatherRepository.GetAll());
+        }
+
+        [HttpGet("filtered", Name = nameof(GetAllWeatherForecastsFiltered))]
+        public async Task<IActionResult> GetAllWeatherForecastsFiltered([FromQuery] string jsonFilterDefinition = null, [FromQuery] string jsonSortingDefinition = null, [FromQuery] int? page = null, [FromQuery] int? pageSize = null)
         {
             if (!page.HasValue)
                 page = 1;

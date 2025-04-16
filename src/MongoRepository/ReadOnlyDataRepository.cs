@@ -57,22 +57,7 @@ namespace MongoRepository
                 .ToListAsync(cancellationToken);
         }
 
-        public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, CancellationToken cancellationToken = default)
-        {
-            return Collection
-                .Find(filterDefinition ?? new BsonDocument())
-                .ToListAsync(cancellationToken);
-        }
-
-        public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition, CancellationToken cancellationToken = default)
-		{
-            return Collection
-                .Find(filterDefinition ?? new BsonDocument())
-				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
-				.ToListAsync(cancellationToken);
-		}
-
-		public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition = null, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
 			if (page.HasValue && pageSize.HasValue)
 			{
@@ -101,35 +86,7 @@ namespace MongoRepository
 			}
 		}
 
-		public virtual Task<List<TEntity>> GetAll(string jsonFilterDefinition, CancellationToken cancellationToken = default)
-		{
-			JsonFilterDefinition<TEntity> filter = null;
-			if (!string.IsNullOrEmpty(jsonFilterDefinition))
-			{
-				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
-			}
-
-			return GetAll(filterDefinition: filter, cancellationToken);
-		}
-
-		public virtual Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, CancellationToken cancellationToken = default)
-		{
-			JsonFilterDefinition<TEntity> filter = null;
-			if (!string.IsNullOrEmpty(jsonFilterDefinition))
-			{
-				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
-			}
-
-			JsonSortDefinition<TEntity> sorting = null;
-			if (!string.IsNullOrEmpty(jsonSortingDefinition))
-			{
-				sorting = new JsonSortDefinition<TEntity>(jsonSortingDefinition);
-			}
-
-			return GetAll(filterDefinition: filter, sortDefinition: sorting, cancellationToken);
-		}
-
-		public virtual Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
 			JsonFilterDefinition<TEntity> filter = null;
 			if (!string.IsNullOrEmpty(jsonFilterDefinition))
