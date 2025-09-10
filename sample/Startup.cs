@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MongoRepository;
+using MongoRepository.HealthChecks;
 using Sample.Repositories;
 
 namespace Sample
@@ -30,6 +31,14 @@ namespace Sample
             services.AddControllers();
             services.Configure<MongoDbOptions>(Configuration.GetSection("MongoDbOptions"));
             services.AddScoped<IWeatherForecastRepository, WeatherForecastMongoDbRepository>();
+
+            services
+                .AddHealthChecks()
+                .AddMongoRepository(o =>
+                  {
+                      o.SingleFailureIsUnhealthy = true;
+                      o.MissingConnectionIsFailure = false;
+                  });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +58,7 @@ namespace Sample
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHealthChecks("/health");
             });
         }
     }

@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\src\MongoRepository.HealthChecks\MongoRepository.HealthChecks.csproj" />
     <ProjectReference Include="..\src\MongoRepository\MongoRepository.csproj" />
   </ItemGroup>
 
