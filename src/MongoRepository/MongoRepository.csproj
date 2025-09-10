@@ -11,16 +11,18 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>MongoGenericRepository</PackageId>
-		<Version>9.0.4</Version>
-		<AssemblyVersion>9.0.4.0</AssemblyVersion>
 		<PackageReleaseNotes>removed redundant GetAll overloads</PackageReleaseNotes>
-	</PropertyGroup>
 
+		<Version>$(MongoGenericRepositoryVersion)</Version>
+		<AssemblyVersion>$(MongoGenericRepositoryVersion).0</AssemblyVersion>
+		<FileVersion>$(MongoGenericRepositoryVersion).0</FileVersion>
+	</PropertyGroup>
+	
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.4" Condition="'$(TargetFramework)' == 'net9.0' Or '$(TargetFramework)' == 'net8.0'" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="9.0.9" Condition="'$(TargetFramework)' == 'net9.0' Or '$(TargetFramework)' == 'net8.0'" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" Condition="'$(TargetFramework)' == 'net7.0'" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.1" Condition="'$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'netstandard2.1'" />
-		<PackageReference Include="MongoDB.Driver" Version="3.3.0" />
+		<PackageReference Include="MongoDB.Driver" Version="3.4.3" />
 	</ItemGroup>
 
 	<ItemGroup>

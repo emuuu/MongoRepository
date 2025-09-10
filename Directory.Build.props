@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <MongoGenericRepositoryVersion>9.0.4</MongoGenericRepositoryVersion>
+  </PropertyGroup>
+</Project>
