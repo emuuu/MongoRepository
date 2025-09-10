@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <PackageId>MongoGenericRepository.HealthChecks</PackageId>
+    <AssemblyName>MongoGenericRepository.HealthChecks</AssemblyName>
+    <RootNamespace>MongoRepository.HealthChecks</RootNamespace>
+
+    <Version>$(MongoGenericRepositoryVersion)</Version>
+    <AssemblyVersion>$(MongoGenericRepositoryVersion).0</AssemblyVersion>
+    <FileVersion>$(MongoGenericRepositoryVersion).0</FileVersion>
+
+    <Description>Optional HealthChecks Add-On for MongoGenericRepository (checks ReadOnly / ReadWrite connections).</Description>
+    <Authors>Timm Bremekamp</Authors>
+    <Company>FM-Gruppe</Company>
+    <RepositoryUrl>https://github.com/emuuu/MongoRepository</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>mongodb;repository;healthcheck</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>mongorepository_logo.png</PackageIcon>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0'">
+    <LangVersion>13.0</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)'!='net9.0'">
+    <LangVersion>12.0</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <HealthChecksNet6Version>6.0.0</HealthChecksNet6Version>
+    <HealthChecksNet7Version>7.0.0</HealthChecksNet7Version>
+    <HealthChecksNet8Version>8.0.0</HealthChecksNet8Version>
+    <HealthChecksNet9Version>9.0.9</HealthChecksNet9Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<PackageReference Include="MongoGenericRepository" Version="[ $(MongoGenericRepositoryVersion) ]" />
+	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(HealthChecksNet6Version)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net7.0'">
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(HealthChecksNet7Version)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(HealthChecksNet8Version)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net9.0'">
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(HealthChecksNet9Version)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1'">
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="$(HealthChecksNet6Version)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\mongorepository_logo.png" Pack="true" PackagePath="\" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
