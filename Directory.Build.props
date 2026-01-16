@@ -1,24 +1,22 @@
 <Project>
   <PropertyGroup>
-    <MongoGenericRepositoryVersion>10.0.0</MongoGenericRepositoryVersion>
+    <MongoGenericRepositoryVersion>10.1.0</MongoGenericRepositoryVersion>
     <PackageReleaseNotes>
-Update to .NET 10.0, modernize dependencies and targets
+    Handle invalid ID formats in Get methods of repository
 
-- Dropped .NET 6/7 support
-- Added .NET 10.0 as the primary target across all projects
-- Updated MongoDB.Driver to 3.6.0
-- Standardized Microsoft.Extensions.Options to 10.0.2
-- Refreshed HealthChecks package versions and language settings
-- Modernized project files and removed legacy framework support
+    - Updated Get(TKey id) and Get(IEnumerable&lt;TKey&gt; ids) methods in ReadOnlyDataRepository to catch FormatException and ArgumentException
+    - These methods now return null or an empty list, respectively, when invalid ID formats are provided
+    - Improved robustness against bad input (e.g., invalid ObjectId strings)
+    - Both methods are now async
     </PackageReleaseNotes>
     
-    <!-- Gemeinsame Metadaten für alle Pakete -->
+    <!-- Gemeinsame Metadaten fÃ¼r alle Pakete -->
     <Authors>Timm Bremekamp</Authors>
     <Company>FM-Gruppe</Company>
     <RepositoryUrl>https://github.com/emuuu/MongoRepository</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>mongorepository_logo.png</PackageIcon>
-    <Copyright>Copyright © $(Authors) $([System.DateTime]::Now.Year)</Copyright>
+    <Copyright>Copyright Â© $(Authors) $([System.DateTime]::Now.Year)</Copyright>
   </PropertyGroup>
 </Project>

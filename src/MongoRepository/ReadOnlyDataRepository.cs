@@ -23,16 +23,40 @@ namespace MongoRepository
 		public virtual IMongoCollection<TEntity> Collection { get; }
 
 
-		public virtual Task<TEntity> Get(TKey id, CancellationToken cancellationToken = default)
+		public virtual async Task<TEntity> Get(TKey id, CancellationToken cancellationToken = default)
 		{
-			var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
-            return Collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+			try
+			{
+				var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
+				return await Collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+			}
+			catch (FormatException)
+			{
+				// Invalid BsonId format (e.g., invalid ObjectId string)
+				return null;
+			}
+			catch (ArgumentException)
+			{
+				// Invalid argument for ID conversion
+				return null;
+			}
 		}
 
-		public virtual Task<List<TEntity>> Get(IEnumerable<TKey> ids, CancellationToken cancellationToken = default)
+		public virtual async Task<List<TEntity>> Get(IEnumerable<TKey> ids, CancellationToken cancellationToken = default)
 		{
-			var filter = Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids);
-			return Collection.Find(filter).ToListAsync(cancellationToken);
+			try
+			{
+				var filter = Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids);
+				return await Collection.Find(filter).ToListAsync(cancellationToken);
+			}
+			catch (FormatException)
+			{
+				return new List<TEntity>();
+			}
+			catch (ArgumentException)
+			{
+				return new List<TEntity>();
+			}
 		}
 
 		public virtual Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null, CancellationToken cancellationToken = default)
