@@ -1,13 +1,18 @@
 <Project>
   <PropertyGroup>
-    <MongoGenericRepositoryVersion>10.1.0</MongoGenericRepositoryVersion>
+    <MongoGenericRepositoryVersion>10.2.0</MongoGenericRepositoryVersion>
     <PackageReleaseNotes>
-    Handle invalid ID formats in Get methods of repository
+    Bug fixes, performance improvements, and API cleanup
 
-    - Updated Get(TKey id) and Get(IEnumerable&lt;TKey&gt; ids) methods in ReadOnlyDataRepository to catch FormatException and ArgumentException
-    - These methods now return null or an empty list, respectively, when invalid ID formats are provided
-    - Improved robustness against bad input (e.g., invalid ObjectId strings)
-    - Both methods are now async
+    - Fix NullReferenceException in paged GetAll/GetAllDescending methods when page/pageSize are null
+    - Fix missing OrderByDescending in GetAllDescending(filter) overload
+    - Fix TargetFramework conflict in csproj that broke multi-targeting
+    - Cache MongoClient instances per connection string to avoid connection pool waste
+    - Fix string trimming in AddRange/Update(bulk) to respect BsonIgnoreAttribute
+    - Fix HealthCheck: reuse cached MongoClient, correct skip-status reporting, filter null exceptions
+    - Mark broken/unusable method overloads as [Obsolete] (Get, GetAll, GetAllDescending with unused TProperty)
+    - Remove unused IRepository interface
+    - Fix XML-Doc param syntax in EntityCollectionAttribute and EntityDatabaseAttribute
     </PackageReleaseNotes>
     
     <!-- Gemeinsame Metadaten für alle Pakete -->

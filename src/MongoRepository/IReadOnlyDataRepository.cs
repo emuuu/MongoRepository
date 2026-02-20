@@ -46,6 +46,7 @@ namespace MongoRepository
         /// <param name="filter">The LINQ filter expression.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>The first matching entity, or null if none found.</returns>
+        [Obsolete("Use Get(FilterDefinition) or the LINQ Where().FirstOrDefault() pattern instead. The TProperty parameter is unused. This method will be removed in v11.")]
         Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -86,6 +87,7 @@ namespace MongoRepository
         /// <param name="pageSize">The number of items per page.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of filtered and optionally paged entities.</returns>
+        [Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v11.")]
         Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -120,6 +122,7 @@ namespace MongoRepository
         /// <param name="pageSize">The page size.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A list of sorted entities.</returns>
+        [Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v11.")]
         Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
         /// <summary>

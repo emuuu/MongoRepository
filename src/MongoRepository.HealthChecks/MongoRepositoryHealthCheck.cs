@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,12 +16,14 @@ namespace MongoRepository.HealthChecks
     /// </summary>
     public class MongoRepositoryHealthCheck : IHealthCheck
     {
+        private static readonly ConcurrentDictionary<string, MongoClient> _clientCache = new();
+
         private readonly MongoDbOptions _options;
         private readonly MongoRepositoryHealthCheckOptions _behavior;
 
         public MongoRepositoryHealthCheck(
             IOptions<MongoDbOptions> options,
-            MongoRepositoryHealthCheckOptions behavior = null)
+            MongoRepositoryHealthCheckOptions? behavior = null)
         {
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _behavior = behavior ?? new MongoRepositoryHealthCheckOptions();
@@ -33,8 +37,10 @@ namespace MongoRepository.HealthChecks
 
             bool readOnlyOk = false;
             bool readWriteOk = false;
-            Exception readOnlyEx = null;
-            Exception readWriteEx = null;
+            bool readOnlySkipped = false;
+            bool readWriteSkipped = false;
+            Exception? readOnlyEx = null;
+            Exception? readWriteEx = null;
 
             static string ResolveDatabaseName(string connectionString)
             {
@@ -47,7 +53,7 @@ namespace MongoRepository.HealthChecks
             {
                 try
                 {
-                    var roClient = new MongoClient(_options.ReadOnlyConnection);
+                    var roClient = _clientCache.GetOrAdd(_options.ReadOnlyConnection, cs => new MongoClient(cs));
                     var db = roClient.GetDatabase(ResolveDatabaseName(_options.ReadOnlyConnection));
                     await db.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1), cancellationToken: cancellationToken);
                     readOnlyOk = true;
@@ -65,8 +71,8 @@ namespace MongoRepository.HealthChecks
                 }
                 else
                 {
+                    readOnlySkipped = true;
                     data["readOnlySkipped"] = true;
-                    readOnlyOk = true;
                 }
             }
 
@@ -75,7 +81,7 @@ namespace MongoRepository.HealthChecks
             {
                 try
                 {
-                    var rwClient = new MongoClient(_options.ReadWriteConnection);
+                    var rwClient = _clientCache.GetOrAdd(_options.ReadWriteConnection, cs => new MongoClient(cs));
                     var db = rwClient.GetDatabase(ResolveDatabaseName(_options.ReadWriteConnection));
                     await db.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1), cancellationToken: cancellationToken);
                     readWriteOk = true;
@@ -93,25 +99,28 @@ namespace MongoRepository.HealthChecks
                 }
                 else
                 {
+                    readWriteSkipped = true;
                     data["readWriteSkipped"] = true;
-                    readWriteOk = true;
                 }
             }
 
-            data["readOnly"] = readOnlyOk ? "ok" : "failed";
-            data["readWrite"] = readWriteOk ? "ok" : "failed";
+            data["readOnly"] = readOnlySkipped ? "skipped" : readOnlyOk ? "ok" : "failed";
+            data["readWrite"] = readWriteSkipped ? "skipped" : readWriteOk ? "ok" : "failed";
             data["singleFailureIsUnhealthy"] = _behavior.SingleFailureIsUnhealthy;
             data["missingConnectionIsFailure"] = _behavior.MissingConnectionIsFailure;
 
-            bool bothOk = readOnlyOk && readWriteOk;
-            bool bothFailed = !readOnlyOk && !readWriteOk;
+            // Evaluate health based on actually checked connections only
+            bool allCheckedOk = (readOnlyOk || readOnlySkipped) && (readWriteOk || readWriteSkipped);
 
-            if (bothOk)
+            if (allCheckedOk)
                 return HealthCheckResult.Healthy("MongoRepository connections healthy", data);
+
+            bool bothFailed = !readOnlyOk && !readOnlySkipped && !readWriteOk && !readWriteSkipped;
 
             if (bothFailed)
             {
-                var aggregate = new AggregateException(readOnlyEx, readWriteEx);
+                var exceptions = new[] { readOnlyEx, readWriteEx }.Where(e => e != null).Cast<Exception>().ToArray();
+                var aggregate = new AggregateException(exceptions);
                 return HealthCheckResult.Unhealthy("All MongoRepository connections failed", aggregate, data);
             }
 

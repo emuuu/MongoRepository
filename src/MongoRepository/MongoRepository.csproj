@@ -15,7 +15,6 @@
 		<Version>$(MongoGenericRepositoryVersion)</Version>
 		<AssemblyVersion>$(MongoGenericRepositoryVersion).0</AssemblyVersion>
 		<FileVersion>$(MongoGenericRepositoryVersion).0</FileVersion>
-		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>
 	
 	<ItemGroup>

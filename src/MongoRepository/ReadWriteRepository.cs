@@ -51,18 +51,8 @@ namespace MongoRepository
 
         public virtual Task AddRange(IEnumerable<TEntity> entities, InsertManyOptions options = null, CancellationToken cancellationToken = default)
         {
-            foreach (var property in typeof(TEntity).GetProperties())
-            {
-                if (property.PropertyType == typeof(string))
-                {
-                    foreach (var entity in entities)
-                    {
-                        var value = (string)property.GetValue(entity);
-                        if (!string.IsNullOrWhiteSpace(value))
-                            property.SetValue(entity, value.Trim());
-                    }
-                }
-            }
+            foreach (var entity in entities)
+                TrimStrings(entity);
 
             return Collection.InsertManyAsync(entities, options, cancellationToken: cancellationToken);
         }
@@ -77,18 +67,9 @@ namespace MongoRepository
 
         public virtual Task<BulkWriteResult<TEntity>> Update(IEnumerable<TEntity> entities, BulkWriteOptions bulkWriteOptions = null, CancellationToken cancellationToken = default)
         {
-            foreach (var property in typeof(TEntity).GetProperties())
-            {
-                if (property.PropertyType == typeof(string))
-                {
-                    foreach (var entity in entities)
-                    {
-                        var value = (string)property.GetValue(entity);
-                        if (!string.IsNullOrWhiteSpace(value))
-                            property.SetValue(entity, value.Trim());
-                    }
-                }
-            }
+            foreach (var entity in entities)
+                TrimStrings(entity);
+
             var updates = new List<WriteModel<TEntity>>();
             foreach (var entity in entities)
             {

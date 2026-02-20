@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
+using System.Collections.Concurrent;
 
 namespace MongoRepository
 {
@@ -8,6 +9,8 @@ namespace MongoRepository
     /// <typeparam name="TEntity">	Type of the entity. </typeparam>
     public class EntityContext<TEntity>
 	{
+		private static readonly ConcurrentDictionary<string, MongoClient> _clientCache = new ConcurrentDictionary<string, MongoClient>();
+
 		/// <summary>   Constructor. </summary>
 		/// <param name="mongoOptions">   The mongoDB connection options. </param>
 		public EntityContext(IOptions<MongoDbOptions> mongoOptions)
@@ -20,13 +23,11 @@ namespace MongoRepository
 			var collectionAttribute = (EntityCollectionAttribute)Attribute.GetCustomAttribute(typeof(TEntity), typeof(EntityCollectionAttribute));
 			_entityCollectionName = collectionAttribute?.Collection ?? _entityTypeName;
 
-			var client = new MongoClient(mongoOptions.Value.ReadOnlyConnection);
-			if (client != null)
-				_readOnlyDatabase = client.GetDatabase(_entityDatabaseName);
+			var roClient = _clientCache.GetOrAdd(mongoOptions.Value.ReadOnlyConnection, cs => new MongoClient(cs));
+			_readOnlyDatabase = roClient.GetDatabase(_entityDatabaseName);
 
-			client = new MongoClient(mongoOptions.Value.ReadWriteConnection);
-			if (client != null)
-				_readWriteDatabase = client.GetDatabase(_entityDatabaseName);
+			var rwClient = _clientCache.GetOrAdd(mongoOptions.Value.ReadWriteConnection, cs => new MongoClient(cs));
+			_readWriteDatabase = rwClient.GetDatabase(_entityDatabaseName);
 		}
 
 

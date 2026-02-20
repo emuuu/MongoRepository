@@ -66,6 +66,7 @@ namespace MongoRepository
 				.FirstOrDefaultAsync(cancellationToken);
 		}
 
+		[Obsolete("Use Get(FilterDefinition) or the LINQ Where().FirstOrDefault() pattern instead. The TProperty parameter is unused. This method will be removed in v11.")]
 		public virtual Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 		{
             return Collection
@@ -127,6 +128,7 @@ namespace MongoRepository
 			return GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize, cancellationToken);
 		}
 
+		[Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v11.")]
 		public virtual Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
 			if (page.HasValue && pageSize.HasValue)
@@ -181,8 +183,6 @@ namespace MongoRepository
                 return Collection
                     .AsQueryable()
 					.OrderBy(sorting)
-					.Skip((page.Value - 1) * pageSize.Value)
-					.Take(pageSize.Value)
 					.ToListAsync(cancellationToken);
 			}
 		}
@@ -214,13 +214,12 @@ namespace MongoRepository
                     .AsQueryable()
 					.Where(filter)
 					.OrderBy(sorting)
-					.Skip((page.Value - 1) * pageSize.Value)
-					.Take(pageSize.Value)
 					.ToListAsync(cancellationToken);
 			}
 		}
 
 
+		[Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v11.")]
 		public virtual Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
 			if (page.HasValue && pageSize.HasValue)
@@ -246,8 +245,6 @@ namespace MongoRepository
                 return Collection
                     .AsQueryable()
 					.Where(filter)
-					.Skip((page.Value - 1) * pageSize.Value)
-					.Take(pageSize.Value)
 					.ToListAsync(cancellationToken);
 			}
 		}
@@ -277,8 +274,6 @@ namespace MongoRepository
                 return Collection
                     .AsQueryable()
 					.OrderByDescending(sorting)
-					.Skip((page.Value - 1) * pageSize.Value)
-					.Take(pageSize.Value)
 					.ToListAsync(cancellationToken);
 			}
 		}
@@ -310,8 +305,6 @@ namespace MongoRepository
                     .AsQueryable()
                     .Where(filter)
 					.OrderByDescending(sorting)
-					.Skip((page.Value - 1) * pageSize.Value)
-					.Take(pageSize.Value)
 					.ToListAsync(cancellationToken);
 			}
 		}

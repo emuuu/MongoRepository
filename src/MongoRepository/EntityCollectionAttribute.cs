@@ -16,7 +16,7 @@ namespace MongoRepository
         }
 
         /// <summary>	Constructor. </summary>
-        /// <param collection="collection">	The collection of the entity. </param>
+        /// <param name="collection">	The collection of the entity. </param>
         public EntityCollectionAttribute(string collection)
         {
             Collection = collection;
