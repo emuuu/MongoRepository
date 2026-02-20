@@ -1,0 +1,205 @@
+[
+  {
+    "slug": "api/ientity",
+    "title": "IEntity",
+    "category": "API Reference",
+    "order": 1,
+    "description": "Base interface for all MongoDB entities.",
+    "apiRef": "IEntity\u00601",
+    "headings": [
+      "Overview",
+      "Usage",
+      "Custom Key Types"
+    ],
+    "searchText": "Overview IEntity\u003CTKey\u003E is the base interface that all entities must implement. It defines the required Id property used by the repository for CRUD operations. Usage Custom Key Types While string with ObjectId is the most common pattern, you can use other key types:"
+  },
+  {
+    "slug": "api/read-only-repository",
+    "title": "IReadOnlyDataRepository",
+    "category": "API Reference",
+    "order": 2,
+    "description": "Interface for read-only data access operations.",
+    "apiRef": "IReadOnlyDataRepository\u00602",
+    "headings": [
+      "Overview",
+      "Get Methods",
+      "GetAll Methods",
+      "GetAllDescending",
+      "Count"
+    ],
+    "searchText": "Overview IReadOnlyDataRepository\u003CTEntity, TKey\u003E defines all read operations: Get, GetAll, GetAllDescending, and Count. Use this interface when your service only needs to read data. Get Methods Retrieve a single entity by ID, multiple IDs, filter expression, or filter definition: GetAll Methods Retrieve multiple entities with optional filtering, sorting, and pagination: GetAllDescending Same as GetAll but with descending sort order: Count Count entities matching a filter:"
+  },
+  {
+    "slug": "api/read-write-repository",
+    "title": "IReadWriteRepository",
+    "category": "API Reference",
+    "order": 3,
+    "description": "Interface for full CRUD operations (read \u002B write).",
+    "apiRef": "IReadWriteRepository\u00602",
+    "headings": [
+      "Overview",
+      "Add",
+      "AddRange",
+      "Update",
+      "Delete"
+    ],
+    "searchText": "Overview IReadWriteRepository\u003CTEntity, TKey\u003E extends IReadOnlyDataRepository with write operations: Add, AddRange, Update, and Delete. This is the interface you\u0027ll use most often. Add Insert a single entity: AddRange Insert multiple entities in a single batch operation: Update Replace a single entity or bulk-update multiple entities: Delete Delete by ID, multiple IDs, filter expression, or filter definition:"
+  },
+  {
+    "slug": "api/entity-context",
+    "title": "EntityContext",
+    "category": "API Reference",
+    "order": 4,
+    "description": "MongoDB context that manages client connections and collection access.",
+    "apiRef": "EntityContext\u00601",
+    "headings": [
+      "Overview",
+      "Registration",
+      "How It Works",
+      "Custom Repository Usage"
+    ],
+    "searchText": "Overview EntityContext is the central class that manages MongoDB client instances and provides typed access to collections. It reads connection strings from MongoDbOptions and caches MongoClient instances per connection string. Registration How It Works When a repository accesses its collection, EntityContext determines: 1. Which database to use (from [EntityDatabase] attribute or the default from the connection string) 2. Which collection to use (from [EntityCollection] attribute or the entity "
+  },
+  {
+    "slug": "api/entity-collection-attribute",
+    "title": "EntityCollectionAttribute",
+    "category": "API Reference",
+    "order": 5,
+    "description": "Attribute to specify a custom MongoDB collection name for an entity.",
+    "apiRef": "EntityCollectionAttribute",
+    "headings": [
+      "Overview",
+      "Usage"
+    ],
+    "searchText": "Overview [EntityCollection] overrides the default collection name (entity class name) with a custom name. Usage This stores Product entities in the product_catalog collection instead of Product."
+  },
+  {
+    "slug": "api/entity-database-attribute",
+    "title": "EntityDatabaseAttribute",
+    "category": "API Reference",
+    "order": 6,
+    "description": "Attribute to specify a custom MongoDB database name for an entity.",
+    "apiRef": "EntityDatabaseAttribute",
+    "headings": [
+      "Overview",
+      "Usage"
+    ],
+    "searchText": "Overview [EntityDatabase] overrides the default database (from connection string) with a custom database name for a specific entity. Usage This stores ArchivedOrder entities in the ArchiveDb database instead of the default database."
+  },
+  {
+    "slug": "api/mongodb-options",
+    "title": "MongoDbOptions",
+    "category": "API Reference",
+    "order": 7,
+    "description": "Connection options for MongoDB contexts.",
+    "apiRef": "MongoDbOptions",
+    "headings": [
+      "Overview",
+      "Properties",
+      "Configuration"
+    ],
+    "searchText": "Overview MongoDbOptions configures the MongoDB connection strings used by EntityContext. It supports separate read-write and read-only connections for replica set deployments. Properties | Property | Type | Description | |----------|------|-------------| | ReadWriteConnection | string | Connection string for read and write operations | | ReadOnlyConnection | string | Connection string for read-only operations (optional) | Configuration If ReadOnlyConnection is not set, read operations fall back "
+  },
+  {
+    "slug": "getting-started/installation",
+    "title": "Installation",
+    "category": "Getting Started",
+    "order": 1,
+    "description": "Install and configure MongoRepository in your .NET project.",
+    "headings": [
+      "NuGet Package",
+      "Configuration",
+      "Register Services",
+      "Define an Entity",
+      "Create a Repository",
+      "Next Steps"
+    ],
+    "searchText": "NuGet Package Install the main package via NuGet: For health checks support: Configuration Add your MongoDB connection settings to appsettings.json: Register Services In your Program.cs, register the MongoDB context: Then register your repositories: Define an Entity Create an entity class implementing IEntity\u003Cstring\u003E: Create a Repository Next Steps - Learn about custom attributes for collection and database naming - Browse the API Reference for all available methods - Set up Health Checks for pr"
+  },
+  {
+    "slug": "getting-started/attributes",
+    "title": "Attributes",
+    "category": "Getting Started",
+    "order": 2,
+    "description": "Use attributes to customize collection and database names for your entities.",
+    "headings": [
+      "EntityCollectionAttribute",
+      "EntityDatabaseAttribute",
+      "Combining Attributes"
+    ],
+    "searchText": "EntityCollectionAttribute By default, MongoRepository uses the entity class name as the MongoDB collection name. Use [EntityCollection] to override: EntityDatabaseAttribute Use [EntityDatabase] to store an entity in a different database than the default: Combining Attributes Both attributes can be used together to fully control where entities are stored:"
+  },
+  {
+    "slug": "getting-started/configuration",
+    "title": "Configuration",
+    "category": "Getting Started",
+    "order": 3,
+    "description": "Configure MongoDB connection strings and options for your application.",
+    "apiRef": "MongoDbOptions",
+    "headings": [
+      "MongoDbOptions",
+      "Basic Setup",
+      "Read/Write Separation",
+      "EntityContext"
+    ],
+    "searchText": "MongoDbOptions MongoRepository uses the MongoDbOptions class to configure database connections. It supports separate read-write and read-only connection strings for replica set scenarios. Basic Setup Read/Write Separation For replica set deployments, you can configure separate connections: The ReadOnlyDataRepository will use the read-only connection when available, falling back to the read-write connection. EntityContext The EntityContext manages MongoDB client instances and provides access to c"
+  },
+  {
+    "slug": "guides/custom-repositories",
+    "title": "Custom Repositories",
+    "category": "Guides",
+    "order": 1,
+    "description": "Extend the base repository with custom query methods.",
+    "headings": [
+      "Creating a Custom Repository",
+      "Accessing the Collection",
+      "Dependency Injection"
+    ],
+    "searchText": "Creating a Custom Repository Inherit from ReadWriteRepository and add domain-specific methods: Accessing the Collection The Collection property gives you direct access to the underlying IMongoCollection\u003CT\u003E for any MongoDB Driver operation: Dependency Injection"
+  },
+  {
+    "slug": "guides/read-write-separation",
+    "title": "Read/Write Separation",
+    "category": "Guides",
+    "order": 2,
+    "description": "Use separate connections for read and write operations in replica sets.",
+    "headings": [
+      "Overview",
+      "Configuration",
+      "How It Works",
+      "Read-Only Repository"
+    ],
+    "searchText": "Overview MongoRepository supports separate read-only and read-write connection strings. This is useful for MongoDB replica set deployments where you want to direct read traffic to secondary nodes. Configuration How It Works - ReadWriteRepository uses the read-write connection for all operations - ReadOnlyDataRepository uses the read-only connection for all read operations - If no read-only connection is configured, all operations use the read-write connection Read-Only Repository For services th"
+  },
+  {
+    "slug": "health-checks/setup",
+    "title": "Health Check Setup",
+    "category": "Health Checks",
+    "order": 1,
+    "description": "Monitor MongoDB connectivity with ASP.NET Core health checks.",
+    "apiRef": "MongoRepositoryHealthCheck",
+    "headings": [
+      "Installation",
+      "Basic Registration",
+      "Custom Options",
+      "Map Health Endpoint",
+      "Health Status Logic"
+    ],
+    "searchText": "Installation Basic Registration This registers a health check named \u0022MongoRepository\u0022 that tests both the read-write and read-only connections. Custom Options Map Health Endpoint Health Status Logic | Scenario | Default | SingleFailureIsUnhealthy | |----------|---------|--------------------------| | Both connections OK | Healthy | Healthy | | One connection fails | Degraded | Unhealthy | | Both connections fail | Unhealthy | Unhealthy | | Connection string empty | Skipped | Skipped (or Failure i"
+  },
+  {
+    "slug": "health-checks/options",
+    "title": "Health Check Options",
+    "category": "Health Checks",
+    "order": 2,
+    "description": "Configure how the MongoDB health check evaluates connection failures.",
+    "apiRef": "MongoRepositoryHealthCheckOptions",
+    "headings": [
+      "Overview",
+      "Properties",
+      "Usage",
+      "Extension Methods"
+    ],
+    "searchText": "Overview MongoRepositoryHealthCheckOptions controls how the health check evaluates failures and missing connections. Properties | Property | Type | Default | Description | |----------|------|---------|-------------| | SingleFailureIsUnhealthy | bool | false | If true, a single failing connection results in Unhealthy instead of Degraded | | MissingConnectionIsFailure | bool | false | If true, a missing (empty) connection string counts as a failure | Usage Extension Methods The AddMongoRepository "
+  }
+]

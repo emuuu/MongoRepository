@@ -1,0 +1,26 @@
+@namespace MongoRepository.Docs.Shared
+@inject IJSRuntime JS
+
+<div class="markdown-body" @ref="_element">
+    @((MarkupString)Html)
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Html { get; set; } = "";
+
+    private ElementReference _element;
+    private string? _lastHtml;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Html != _lastHtml)
+        {
+            _lastHtml = Html;
+            try
+            {
+                await JS.InvokeVoidAsync("BlazorDocs.highlightAll");
+            }
+            catch (JSDisconnectedException) { }
+        }
+    }
+}

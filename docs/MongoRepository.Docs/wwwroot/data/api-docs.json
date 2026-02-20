@@ -1,0 +1,452 @@
+[
+  {
+    "typeName": "EntityCollectionAttribute",
+    "fullName": "MongoRepository.EntityCollectionAttribute",
+    "description": "Attribute for entity name.",
+    "members": [
+      {
+        "name": "Collection",
+        "kind": "Property",
+        "type": "string",
+        "description": "Gets or sets the name."
+      }
+    ]
+  },
+  {
+    "typeName": "EntityContext\u00601",
+    "fullName": "MongoRepository.EntityContext\u00601",
+    "description": "A mongoDB context for specified entity.",
+    "members": [
+      {
+        "name": "Collection(bool readOnly)",
+        "kind": "Method",
+        "type": "IMongoCollection\u003CTEntity\u003E",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "typeName": "EntityDatabaseAttribute",
+    "fullName": "MongoRepository.EntityDatabaseAttribute",
+    "description": "Attribute for entity name.",
+    "members": [
+      {
+        "name": "Database",
+        "kind": "Property",
+        "type": "string",
+        "description": "Gets or sets the name."
+      }
+    ]
+  },
+  {
+    "typeName": "IEntity\u00601",
+    "fullName": "MongoRepository.IEntity\u00601",
+    "description": "Interface for an entity.",
+    "members": [
+      {
+        "name": "Id",
+        "kind": "Property",
+        "type": "TKey",
+        "description": "Gets or sets the identifier."
+      }
+    ]
+  },
+  {
+    "typeName": "IReadOnlyDataRepository\u00602",
+    "fullName": "MongoRepository.IReadOnlyDataRepository\u00602",
+    "description": "Defines read-only operations for a MongoDB-backed data repository.",
+    "members": [
+      {
+        "name": "Get(TKey id, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "Get(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "Get(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "Get(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(FilterDefinition\u003CTEntity\u003E filterDefinition, SortDefinition\u003CTEntity\u003E sortDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "Count(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Clong\u003E",
+        "description": ""
+      },
+      {
+        "name": "Count(string jsonFilterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Clong\u003E",
+        "description": ""
+      },
+      {
+        "name": "Count(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Clong\u003E",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "typeName": "IReadWriteRepository\u00602",
+    "fullName": "MongoRepository.IReadWriteRepository\u00602",
+    "description": "Defines read and write operations for a MongoDB-backed data repository.",
+    "members": [
+      {
+        "name": "Add(TEntity entity, InsertOneOptions options, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task",
+        "description": ""
+      },
+      {
+        "name": "AddRange(IEnumerable\u003CTEntity\u003E entities, InsertManyOptions options, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task",
+        "description": ""
+      },
+      {
+        "name": "Update(TEntity entity, ReplaceOptions replaceOptions, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CReplaceOneResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Update(IEnumerable\u003CTEntity\u003E entities, BulkWriteOptions bulkWriteOptions, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CBulkWriteResult\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(TKey id, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "typeName": "MongoDbOptions",
+    "fullName": "MongoRepository.MongoDbOptions",
+    "description": "Connection options for a mongoDB context.",
+    "members": [
+      {
+        "name": "ReadWriteConnection",
+        "kind": "Property",
+        "type": "string",
+        "description": ""
+      },
+      {
+        "name": "ReadOnlyConnection",
+        "kind": "Property",
+        "type": "string",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "typeName": "MongoRepositoryHealthCheck",
+    "fullName": "MongoRepository.HealthChecks.MongoRepositoryHealthCheck",
+    "description": "Health check that validates connectivity for both read-only and read/write Mongo connections.",
+    "members": [
+      {
+        "name": "CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CHealthCheckResult\u003E",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "typeName": "MongoRepositoryHealthCheckBuilderExtensions",
+    "fullName": "MongoRepository.HealthChecks.MongoRepositoryHealthCheckBuilderExtensions",
+    "description": "Extension methods to register the MongoRepository health check.",
+    "members": [
+      {
+        "name": "AddMongoRepository(IHealthChecksBuilder builder, string name, HealthStatus? failureStatus, IEnumerable\u003Cstring\u003E tags, TimeSpan? timeout)",
+        "kind": "Method",
+        "type": "IHealthChecksBuilder",
+        "description": ""
+      },
+      {
+        "name": "AddMongoRepository(IHealthChecksBuilder builder, Action\u003CMongoRepositoryHealthCheckOptions\u003E configure, string name, HealthStatus? failureStatus, IEnumerable\u003Cstring\u003E tags, TimeSpan? timeout)",
+        "kind": "Method",
+        "type": "IHealthChecksBuilder",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "typeName": "MongoRepositoryHealthCheckOptions",
+    "fullName": "MongoRepository.HealthChecks.MongoRepositoryHealthCheckOptions",
+    "description": "Options to control how the MongoRepository health check evaluates failures.",
+    "members": [
+      {
+        "name": "SingleFailureIsUnhealthy",
+        "kind": "Property",
+        "type": "bool",
+        "description": "If true: a single failing connection (read-only OR read/write) results in Unhealthy. If false: a single failure results in Degraded (default)."
+      },
+      {
+        "name": "MissingConnectionIsFailure",
+        "kind": "Property",
+        "type": "bool",
+        "description": "If true: a missing (empty) connection string counts as a failure. If false: a missing connection string is treated as \u0027skipped\u0027 and does not degrade health (default)."
+      }
+    ]
+  },
+  {
+    "typeName": "ReadOnlyDataRepository\u00602",
+    "fullName": "MongoRepository.ReadOnlyDataRepository\u00602",
+    "description": "",
+    "members": [
+      {
+        "name": "Collection",
+        "kind": "Property",
+        "type": "IMongoCollection\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "Get(TKey id, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "Get(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "Get(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "Get(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(FilterDefinition\u003CTEntity\u003E filterDefinition, SortDefinition\u003CTEntity\u003E sortDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "Count(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Clong\u003E",
+        "description": ""
+      },
+      {
+        "name": "Count(string jsonFilterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Clong\u003E",
+        "description": ""
+      },
+      {
+        "name": "Count(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Clong\u003E",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "typeName": "ReadWriteRepository\u00602",
+    "fullName": "MongoRepository.ReadWriteRepository\u00602",
+    "description": "",
+    "members": [
+      {
+        "name": "Collection",
+        "kind": "Property",
+        "type": "IMongoCollection\u003CTEntity\u003E",
+        "description": ""
+      },
+      {
+        "name": "Add(TEntity entity, InsertOneOptions options, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task",
+        "description": ""
+      },
+      {
+        "name": "AddRange(IEnumerable\u003CTEntity\u003E entities, InsertManyOptions options, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task",
+        "description": ""
+      },
+      {
+        "name": "Update(TEntity entity, ReplaceOptions replaceOptions, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CReplaceOneResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Update(IEnumerable\u003CTEntity\u003E entities, BulkWriteOptions bulkWriteOptions, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CBulkWriteResult\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(TKey id, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "Delete(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      }
+    ]
+  }
+]

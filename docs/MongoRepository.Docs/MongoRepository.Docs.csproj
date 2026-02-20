@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MongoRepository.Docs</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.3" PrivateAssets="all" />
+    <PackageReference Include="Markdig" Version="0.45.0" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/MongoRepository/MongoRepository.csproj" />
+    <ProjectReference Include="../../src/MongoRepository.HealthChecks/MongoRepository.HealthChecks.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BaseUrl Condition="'$(BaseUrl)' == ''">https://emuuu.github.io/MongoRepository</BaseUrl>
+  </PropertyGroup>
+
+  <Target Name="GenerateDocsData" BeforeTargets="Build">
+    <Exec Command="dotnet run --project ../MongoRepository.Docs.Generator -- $(MSBuildProjectDirectory)/wwwroot --base-url $(BaseUrl)" />
+  </Target>
+
+</Project>

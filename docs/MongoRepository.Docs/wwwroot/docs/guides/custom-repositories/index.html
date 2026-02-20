@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Custom Repositories - MongoRepository Docs</title>
+    <base href="/" />
+    <meta name="description" content="Extend the base repository with custom query methods." />
+    <link rel="canonical" href="https://emuuu.github.io/MongoRepository/docs/guides/custom-repositories" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Custom Repositories - MongoRepository" />
+    <meta property="og:description" content="Extend the base repository with custom query methods." />
+    <meta property="og:url" content="https://emuuu.github.io/MongoRepository/docs/guides/custom-repositories" />
+    <meta property="og:site_name" content="MongoRepository Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/MongoRepository/img/mongorepository_logo.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Custom Repositories - MongoRepository" />
+    <meta name="twitter:description" content="Extend the base repository with custom query methods." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Custom Repositories","description":"Extend the base repository with custom query methods.","url":"https://emuuu.github.io/MongoRepository/docs/guides/custom-repositories","image":"https://emuuu.github.io/MongoRepository/img/mongorepository_logo.svg","publisher":{"type":"Organization","name":"MongoRepository"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/MongoRepository/"},{"type":"ListItem","position":2,"name":"Guides","item":"https://emuuu.github.io/MongoRepository/docs/guides"},{"type":"ListItem","position":3,"name":"Custom Repositories","item":"https://emuuu.github.io/MongoRepository/docs/guides/custom-repositories"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/mongorepository_logo.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="MongoRepository.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Custom Repositories</h1>
+            <p class="lead text-muted">Extend the base repository with custom query methods.</p>
+            <h2 id="creating-a-custom-repository">Creating a Custom Repository</h2>
+<p>Inherit from <code>ReadWriteRepository</code> and add domain-specific methods:</p>
+<pre><code class="language-csharp">public interface IProductRepository : IReadWriteRepository&lt;Product, string&gt;
+{
+    Task&lt;List&lt;Product&gt;&gt; GetByCategory(string category);
+    Task&lt;Product?&gt; GetMostExpensive();
+}
+
+public class ProductRepository
+    : ReadWriteRepository&lt;Product, string&gt;, IProductRepository
+{
+    public ProductRepository(EntityContext context) : base(context) { }
+
+    public async Task&lt;List&lt;Product&gt;&gt; GetByCategory(string category)
+    {
+        var filter = Builders&lt;Product&gt;.Filter.Eq(p =&gt; p.Category, category);
+        return await Collection.Find(filter).ToListAsync();
+    }
+
+    public async Task&lt;Product?&gt; GetMostExpensive()
+    {
+        return await Collection
+            .Find(FilterDefinition&lt;Product&gt;.Empty)
+            .SortByDescending(p =&gt; p.Price)
+            .Limit(1)
+            .FirstOrDefaultAsync();
+    }
+}
+</code></pre>
+<h2 id="accessing-the-collection">Accessing the Collection</h2>
+<p>The <code>Collection</code> property gives you direct access to the underlying <code>IMongoCollection&lt;T&gt;</code> for any MongoDB Driver operation:</p>
+<pre><code class="language-csharp">public async Task&lt;long&gt; CountExpensive(decimal threshold)
+{
+    return await Collection.CountDocumentsAsync(
+        Builders&lt;Product&gt;.Filter.Gte(p =&gt; p.Price, threshold));
+}
+</code></pre>
+<h2 id="dependency-injection">Dependency Injection</h2>
+<pre><code class="language-csharp">builder.Services.AddScoped&lt;IProductRepository, ProductRepository&gt;();
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

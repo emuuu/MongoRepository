@@ -1,0 +1,122 @@
+@namespace MongoRepository.Docs.Layout
+@inject IDocContentService ContentService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@if (_isOpen)
+{
+    <div class="search-overlay" @onclick="Close">
+        <div class="search-dialog" @onclick:stopPropagation="true">
+            <div class="search-input-wrapper p-3">
+                <input type="text" class="form-control form-control-lg" placeholder="Search documentation..."
+                       value="@_query" @oninput="HandleInput" @onkeydown="HandleKeyDown"
+                       @ref="_inputRef" autofocus />
+            </div>
+
+            @if (_results.Count > 0)
+            {
+                <div class="search-results list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                    @for (var i = 0; i < _results.Count; i++)
+                    {
+                        var result = _results[i];
+                        var isActive = i == _activeIndex;
+                        <a href="docs/@(result.Slug)" class="list-group-item list-group-item-action @(isActive ? "active" : "")"
+                           @onclick="Close">
+                            <div class="fw-semibold">@result.Title</div>
+                            @if (result.Headings.Count > 0)
+                            {
+                                <small class="text-muted">@string.Join(" > ", result.Headings.Take(3))</small>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+            else if (!string.IsNullOrWhiteSpace(_query))
+            {
+                <div class="p-3 text-center text-muted">No results found.</div>
+            }
+
+            <div class="search-footer p-2 text-muted small text-center border-top">
+                <kbd>Enter</kbd> to select &middot; <kbd>Esc</kbd> to close
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isOpen;
+    private string _query = "";
+    private List<SearchEntry> _results = [];
+    private int _activeIndex;
+    private ElementReference _inputRef;
+    private DotNetObjectReference<SearchDialog>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("BlazorDocs.registerSearchShortcut", _dotNetRef);
+        }
+
+        if (_isOpen)
+        {
+            try { await _inputRef.FocusAsync(); } catch { }
+        }
+    }
+
+    [JSInvokable]
+    public void Open()
+    {
+        _isOpen = true;
+        _query = "";
+        _results = [];
+        _activeIndex = 0;
+        StateHasChanged();
+    }
+
+    private void Close()
+    {
+        _isOpen = false;
+        StateHasChanged();
+    }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        _query = e.Value?.ToString() ?? "";
+        _results = ContentService.Search(_query);
+        _activeIndex = 0;
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Escape":
+                Close();
+                break;
+            case "ArrowDown":
+                _activeIndex = Math.Min(_activeIndex + 1, _results.Count - 1);
+                break;
+            case "ArrowUp":
+                _activeIndex = Math.Max(_activeIndex - 1, 0);
+                break;
+            case "Enter" when _results.Count > 0 && _activeIndex < _results.Count:
+                var slug = _results[_activeIndex].Slug;
+                Navigation.NavigateTo($"docs/{slug}");
+                Close();
+                break;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _dotNetRef?.Dispose();
+        try
+        {
+            await JS.InvokeVoidAsync("BlazorDocs.unregisterSearchShortcut");
+        }
+        catch (JSDisconnectedException) { }
+    }
+}

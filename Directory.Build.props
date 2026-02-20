@@ -23,5 +23,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>mongorepository_logo.png</PackageIcon>
     <Copyright>Copyright © $(Authors) $([System.DateTime]::Now.Year)</Copyright>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 </Project>

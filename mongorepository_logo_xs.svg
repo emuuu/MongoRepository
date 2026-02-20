@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00ED64"/>
+      <stop offset="100%" stop-color="#512BD4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="2" y="2" width="60" height="60" rx="12" ry="12" fill="url(#bg)"/>
+
+  <!-- MongoDB leaf outline -->
+  <path d="
+    M 32 11
+    C 32 11, 26.5 19, 24 27
+    C 21.5 35, 20.5 40, 20.5 43.5
+    C 20.5 49, 23.5 52.5, 28.5 54.5
+    C 30.5 55.3, 31.5 55.5, 32 55.8
+    C 32.5 55.5, 33.5 55.3, 35.5 54.5
+    C 40.5 52.5, 43.5 49, 43.5 43.5
+    C 43.5 40, 42.5 35, 40 27
+    C 37.5 19, 32 11, 32 11 Z
+  " fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+
+  <!-- Stem -->
+  <line x1="32" y1="35" x2="32" y2="55.5"
+        stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+</svg>

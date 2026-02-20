@@ -1,0 +1,73 @@
+@namespace MongoRepository.Docs.Layout
+@inject IDocContentService ContentService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="nav-menu p-3">
+    <div class="nav-filter mb-3">
+        <input type="text" class="form-control form-control-sm" placeholder="Filter..."
+               @bind="_filter" @bind:event="oninput" />
+    </div>
+
+    @foreach (var section in ContentService.GetNavSections())
+    {
+        var visibleItems = section.Items
+            .Where(i => Matches(i.Title))
+            .ToList();
+        if (visibleItems.Count == 0) continue;
+
+        <h6 class="nav-section-title text-uppercase fw-bold mt-3 mb-2">@(section.Category)</h6>
+        <ul class="nav flex-column">
+            @foreach (var item in visibleItems)
+            {
+                var href = $"docs/{item.Slug}";
+                <li class="nav-item">
+                    <NavLink class="nav-link py-1" href="@href" Match="NavLinkMatch.All"
+                             @onclick="() => OnNavigate.InvokeAsync()">
+                        @item.Title
+                    </NavLink>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter] public EventCallback OnNavigate { get; set; }
+
+    private string _filter = "";
+
+    private bool Matches(string title) =>
+        string.IsNullOrWhiteSpace(_filter) ||
+        title.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private bool _needsScroll;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ContentService.InitializeAsync();
+        Navigation.LocationChanged += OnLocationChanged;
+        _needsScroll = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_needsScroll || firstRender)
+        {
+            _needsScroll = false;
+            await JS.InvokeVoidAsync("BlazorDocs.scrollNavToActive");
+        }
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _needsScroll = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

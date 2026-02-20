@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IReadOnlyDataRepository - MongoRepository Docs</title>
+    <base href="/" />
+    <meta name="description" content="Interface for read-only data access operations." />
+    <link rel="canonical" href="https://emuuu.github.io/MongoRepository/docs/api/read-only-repository" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="IReadOnlyDataRepository - MongoRepository" />
+    <meta property="og:description" content="Interface for read-only data access operations." />
+    <meta property="og:url" content="https://emuuu.github.io/MongoRepository/docs/api/read-only-repository" />
+    <meta property="og:site_name" content="MongoRepository Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/MongoRepository/img/mongorepository_logo.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="IReadOnlyDataRepository - MongoRepository" />
+    <meta name="twitter:description" content="Interface for read-only data access operations." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"IReadOnlyDataRepository","description":"Interface for read-only data access operations.","url":"https://emuuu.github.io/MongoRepository/docs/api/read-only-repository","image":"https://emuuu.github.io/MongoRepository/img/mongorepository_logo.svg","publisher":{"type":"Organization","name":"MongoRepository"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/MongoRepository/"},{"type":"ListItem","position":2,"name":"API Reference","item":"https://emuuu.github.io/MongoRepository/docs/api"},{"type":"ListItem","position":3,"name":"IReadOnlyDataRepository","item":"https://emuuu.github.io/MongoRepository/docs/api/read-only-repository"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/mongorepository_logo.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="MongoRepository.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>IReadOnlyDataRepository</h1>
+            <p class="lead text-muted">Interface for read-only data access operations.</p>
+            <h2 id="overview">Overview</h2>
+<p><code>IReadOnlyDataRepository&lt;TEntity, TKey&gt;</code> defines all read operations: <code>Get</code>, <code>GetAll</code>, <code>GetAllDescending</code>, and <code>Count</code>. Use this interface when your service only needs to read data.</p>
+<h2 id="get-methods">Get Methods</h2>
+<p>Retrieve a single entity by ID, multiple IDs, filter expression, or filter definition:</p>
+<pre><code class="language-csharp">// By ID
+var product = await repo.Get(&quot;507f1f77bcf86cd799439011&quot;);
+
+// By multiple IDs
+var products = await repo.Get(new[] { id1, id2, id3 });
+
+// By LINQ expression
+var product = await repo.Get(p =&gt; p.Name == &quot;Widget&quot;);
+
+// By MongoDB FilterDefinition
+var filter = Builders&lt;Product&gt;.Filter.Eq(p =&gt; p.Name, &quot;Widget&quot;);
+var product = await repo.Get(filter);
+</code></pre>
+<h2 id="getall-methods">GetAll Methods</h2>
+<p>Retrieve multiple entities with optional filtering, sorting, and pagination:</p>
+<pre><code class="language-csharp">// All entities
+var all = await repo.GetAll();
+
+// With LINQ filter + pagination
+var page = await repo.GetAll(
+    p =&gt; p.Price &gt; 10,
+    page: 1,
+    pageSize: 20);
+
+// With sorting expression
+var sorted = await repo.GetAll(
+    p =&gt; p.Price &gt; 10,
+    p =&gt; p.Name,
+    page: 1,
+    pageSize: 20);
+
+// With MongoDB filter + sort definitions
+var filter = Builders&lt;Product&gt;.Filter.Gt(p =&gt; p.Price, 10);
+var sort = Builders&lt;Product&gt;.Sort.Ascending(p =&gt; p.Name);
+var result = await repo.GetAll(filter, sort, page: 1, pageSize: 20);
+
+// With JSON filter + sort
+var result = await repo.GetAll(
+    &quot;&quot;&quot;{&quot;Price&quot;: {&quot;$gt&quot;: 10}}&quot;&quot;&quot;,
+    &quot;&quot;&quot;{&quot;Name&quot;: 1}&quot;&quot;&quot;,
+    page: 1,
+    pageSize: 20);
+</code></pre>
+<h2 id="getalldescending">GetAllDescending</h2>
+<p>Same as <code>GetAll</code> but with descending sort order:</p>
+<pre><code class="language-csharp">var newest = await repo.GetAllDescending(
+    p =&gt; p.CreatedAt,
+    page: 1,
+    pageSize: 10);
+</code></pre>
+<h2 id="count">Count</h2>
+<p>Count entities matching a filter:</p>
+<pre><code class="language-csharp">var total = await repo.Count(p =&gt; p.IsActive);
+
+var filtered = await repo.Count(
+    Builders&lt;Product&gt;.Filter.Gt(p =&gt; p.Price, 100));
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

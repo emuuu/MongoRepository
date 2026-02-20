@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EntityContext - MongoRepository Docs</title>
+    <base href="/" />
+    <meta name="description" content="MongoDB context that manages client connections and collection access." />
+    <link rel="canonical" href="https://emuuu.github.io/MongoRepository/docs/api/entity-context" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="EntityContext - MongoRepository" />
+    <meta property="og:description" content="MongoDB context that manages client connections and collection access." />
+    <meta property="og:url" content="https://emuuu.github.io/MongoRepository/docs/api/entity-context" />
+    <meta property="og:site_name" content="MongoRepository Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/MongoRepository/img/mongorepository_logo.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="EntityContext - MongoRepository" />
+    <meta name="twitter:description" content="MongoDB context that manages client connections and collection access." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"EntityContext","description":"MongoDB context that manages client connections and collection access.","url":"https://emuuu.github.io/MongoRepository/docs/api/entity-context","image":"https://emuuu.github.io/MongoRepository/img/mongorepository_logo.svg","publisher":{"type":"Organization","name":"MongoRepository"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/MongoRepository/"},{"type":"ListItem","position":2,"name":"API Reference","item":"https://emuuu.github.io/MongoRepository/docs/api"},{"type":"ListItem","position":3,"name":"EntityContext","item":"https://emuuu.github.io/MongoRepository/docs/api/entity-context"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/mongorepository_logo.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="MongoRepository.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>EntityContext</h1>
+            <p class="lead text-muted">MongoDB context that manages client connections and collection access.</p>
+            <h2 id="overview">Overview</h2>
+<p><code>EntityContext</code> is the central class that manages MongoDB client instances and provides typed access to collections. It reads connection strings from <code>MongoDbOptions</code> and caches <code>MongoClient</code> instances per connection string.</p>
+<h2 id="registration">Registration</h2>
+<pre><code class="language-csharp">builder.Services.Configure&lt;MongoDbOptions&gt;(
+    builder.Configuration.GetSection(&quot;MongoDb&quot;));
+builder.Services.AddSingleton&lt;EntityContext&gt;();
+</code></pre>
+<h2 id="how-it-works">How It Works</h2>
+<p>When a repository accesses its collection, <code>EntityContext</code> determines:</p>
+<ol>
+<li>Which <strong>database</strong> to use (from <code>[EntityDatabase]</code> attribute or the default from the connection string)</li>
+<li>Which <strong>collection</strong> to use (from <code>[EntityCollection]</code> attribute or the entity class name)</li>
+<li>Whether to use the <strong>read-only</strong> or <strong>read-write</strong> connection</li>
+</ol>
+<h2 id="custom-repository-usage">Custom Repository Usage</h2>
+<p>In custom repositories, you can access the underlying <code>IMongoCollection&lt;T&gt;</code> for advanced queries:</p>
+<pre><code class="language-csharp">public class ProductRepository : ReadWriteRepository&lt;Product, string&gt;
+{
+    public ProductRepository(EntityContext context) : base(context) { }
+
+    public async Task&lt;List&lt;Product&gt;&gt; GetExpensive(decimal minPrice)
+    {
+        var filter = Builders&lt;Product&gt;.Filter.Gte(p =&gt; p.Price, minPrice);
+        var sort = Builders&lt;Product&gt;.Sort.Descending(p =&gt; p.Price);
+
+        return await Collection
+            .Find(filter)
+            .Sort(sort)
+            .Limit(100)
+            .ToListAsync();
+    }
+}
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

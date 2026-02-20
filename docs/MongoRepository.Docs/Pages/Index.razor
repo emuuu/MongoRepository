@@ -1,0 +1,115 @@
+@page "/"
+
+<PageTitle>MongoRepository Docs</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Generic, extensible CRUD repository for MongoDB with .NET. Straightforward data access with the repository pattern." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MongoRepository Docs" />
+    <meta property="og:description" content="Generic, extensible CRUD repository for MongoDB with .NET." />
+    <meta property="og:site_name" content="MongoRepository Docs" />
+</HeadContent>
+
+<div class="landing-page py-5">
+    <div class="text-center mb-5">
+        <img src="img/mongorepository_logo.svg" alt="MongoRepository" width="96" height="96" class="mb-3" />
+        <h1 class="display-4 fw-bold">MongoRepository</h1>
+        <p class="lead text-muted">
+            Straightforward, generic, extensible CRUD repository for MongoDB.
+            Clean data access with the repository pattern for .NET.
+        </p>
+        <div class="mt-4">
+            <a href="docs/getting-started/installation" class="btn btn-primary btn-lg me-2">Get Started</a>
+            <a href="https://github.com/emuuu/MongoRepository" class="btn btn-outline-secondary btn-lg"
+               target="_blank" rel="noopener">GitHub</a>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Getting Started</h5>
+                    <p class="card-text text-muted">
+                        Installation, configuration, and your first repository --
+                        up and running in minutes.
+                    </p>
+                    <a href="docs/getting-started/installation" class="btn btn-sm btn-outline-primary">Get Started</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">API Reference</h5>
+                    <p class="card-text text-muted">
+                        Interfaces, base classes, attributes, and extension methods --
+                        auto-generated from source code.
+                    </p>
+                    <a href="docs/api/read-only-repository" class="btn btn-sm btn-outline-primary">Browse API</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Health Checks</h5>
+                    <p class="card-text text-muted">
+                        Optional health check add-on for monitoring MongoDB
+                        connectivity in ASP.NET Core applications.
+                    </p>
+                    <a href="docs/health-checks/setup" class="btn btn-sm btn-outline-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Start</h5>
+                    <CodeBlock Language="bash" Code="dotnet add package MongoGenericRepository" />
+                    <CodeBlock Language="csharp" Code="@_setupCode" />
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Simple Repository</h5>
+                    <CodeBlock Language="csharp" Code="@_repoCode" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <h4>Features</h4>
+        <div class="row g-3 mt-2">
+            <div class="col-sm-6 col-lg-3"><span class="badge bg-primary-subtle text-primary-emphasis p-2">Generic CRUD</span></div>
+            <div class="col-sm-6 col-lg-3"><span class="badge bg-primary-subtle text-primary-emphasis p-2">Dependency Injection</span></div>
+            <div class="col-sm-6 col-lg-3"><span class="badge bg-primary-subtle text-primary-emphasis p-2">.NET 8 / 9 / 10</span></div>
+            <div class="col-sm-6 col-lg-3"><span class="badge bg-primary-subtle text-primary-emphasis p-2">MongoDB Driver 3.x</span></div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private const string _setupCode = """
+        builder.Services.AddMongoRepository(opts =>
+        {
+            opts.ConnectionString = "mongodb://localhost:27017";
+            opts.DatabaseName = "MyDatabase";
+        });
+        """;
+
+    private const string _repoCode = """
+        public class ProductRepository
+            : ReadWriteRepository<Product>
+        {
+            public ProductRepository(EntityContext context)
+                : base(context) { }
+        }
+        """;
+}

@@ -1,0 +1,84 @@
+@page "/docs/{**Slug}"
+@inject IDocContentService ContentService
+@inject IApiDocService ApiDocService
+
+<PageTitle>@(_article?.Title ?? "Loading...") - MongoRepository Docs</PageTitle>
+
+@if (_article is not null)
+{
+    <HeadContent>
+        <meta name="description" content="@_article.Description" />
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content="@(_article.Title) - MongoRepository" />
+        <meta property="og:description" content="@_article.Description" />
+        <meta property="og:site_name" content="MongoRepository Docs" />
+    </HeadContent>
+}
+
+@if (_loading)
+{
+    <div class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (_article is null)
+{
+    <div class="text-center py-5">
+        <h2>Page Not Found</h2>
+        <p class="text-muted">The page <code>@Slug</code> could not be found.</p>
+        <a href="" class="btn btn-primary">Go Home</a>
+    </div>
+}
+else
+{
+    <div class="doc-layout d-flex">
+        <article class="doc-content flex-grow-1 min-width-0">
+            <h1>@_article.Title</h1>
+            @if (!string.IsNullOrEmpty(_article.Description))
+            {
+                <p class="lead text-muted">@_article.Description</p>
+            }
+
+            <MarkdownRenderer Html="@_article.HtmlContent" />
+
+            @if (_apiDoc is not null)
+            {
+                <ApiReferenceSection Doc="_apiDoc" />
+            }
+        </article>
+
+        <OnThisPage Headings="_article.Headings" />
+    </div>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private DocArticle? _article;
+    private ApiTypeDoc? _apiDoc;
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _article = null;
+        _apiDoc = null;
+
+        if (string.IsNullOrEmpty(Slug)) return;
+
+        _article = await ContentService.GetArticleAsync(Slug);
+
+        if (_article is not null)
+        {
+            if (!string.IsNullOrEmpty(_article.ApiRefType))
+            {
+                await ApiDocService.InitializeAsync();
+                _apiDoc = ApiDocService.GetApiDoc(_article.ApiRefType);
+            }
+        }
+
+        _loading = false;
+    }
+}

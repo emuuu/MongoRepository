@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://emuuu.github.io/MongoRepository/sitemap.xml

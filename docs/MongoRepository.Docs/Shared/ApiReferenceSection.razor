@@ -1,0 +1,96 @@
+@namespace MongoRepository.Docs.Shared
+
+@if (Doc is not null && Doc.Members.Count > 0)
+{
+    <section class="api-reference mt-5">
+        <h2 id="api-reference">API Reference</h2>
+
+        @if (!string.IsNullOrEmpty(Doc.Description))
+        {
+            <p class="text-muted">@Doc.Description</p>
+        }
+
+        @{ var properties = Doc.Members.Where(m => m.Kind == ApiMemberKind.Property).ToList(); }
+        @if (properties.Count > 0)
+        {
+            <h3 id="properties">Properties</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in properties)
+                        {
+                            <tr>
+                                <td><code>@member.Name</code></td>
+                                <td><code>@member.Type</code></td>
+                                <td>@member.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @{ var methods = Doc.Members.Where(m => m.Kind == ApiMemberKind.Method).ToList(); }
+        @if (methods.Count > 0)
+        {
+            <h3 id="methods">Methods</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Return Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in methods)
+                        {
+                            <tr>
+                                <td><code>@member.Name</code></td>
+                                <td><code>@member.Type</code></td>
+                                <td>@member.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @{ var enumValues = Doc.Members.Where(m => m.Kind == ApiMemberKind.EnumValue).ToList(); }
+        @if (enumValues.Count > 0)
+        {
+            <h3 id="values">Values</h3>
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in enumValues)
+                        {
+                            <tr>
+                                <td><code>@member.Name</code></td>
+                                <td>@member.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [Parameter, EditorRequired] public ApiTypeDoc? Doc { get; set; }
+}

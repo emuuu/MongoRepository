@@ -1,0 +1,62 @@
+@namespace MongoRepository.Docs.Shared
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="code-block position-relative">
+    <button class="btn btn-sm btn-outline-light copy-btn position-absolute top-0 end-0 m-2"
+            @onclick="CopyToClipboard">
+        @(_copied ? "Copied!" : "Copy")
+    </button>
+    <pre class="m-0" style="@PreStyle"><code class="language-@Language" @ref="_codeElement">@Code</code></pre>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+    [Parameter] public string Language { get; set; } = "csharp";
+    [Parameter] public string? MaxHeight { get; set; }
+
+    private string? PreStyle => MaxHeight is not null ? $"max-height: {MaxHeight}; overflow: auto;" : null;
+
+    private ElementReference _codeElement;
+    private bool _copied;
+    private string? _lastCode;
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Code != _lastCode)
+        {
+            _lastCode = Code;
+            try
+            {
+                await JS.InvokeVoidAsync("BlazorDocs.highlightElement", _codeElement);
+            }
+            catch (JSDisconnectedException) { }
+        }
+    }
+
+    private async Task CopyToClipboard()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("BlazorDocs.copyToClipboard", Code);
+            _copied = true;
+            StateHasChanged();
+
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = new CancellationTokenSource();
+            await Task.Delay(2000, _cts.Token);
+            _copied = false;
+            StateHasChanged();
+        }
+        catch (TaskCanceledException) { }
+        catch (JSDisconnectedException) { }
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}
