@@ -1,0 +1,19 @@
+name: Release HealthChecks
+on:
+  push:
+    tags: ['healthchecks/v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    uses: ./.github/workflows/release-package.yml
+    with:
+      package: healthchecks
+      csproj-path: src/MongoRepository.HealthChecks/MongoRepository.HealthChecks.csproj
+      test-directory: tests/MongoRepository.Tests
+      title-prefix: MongoGenericRepository.HealthChecks
+    secrets:
+      nuget-api-key: ${{ secrets.NUGET_API_KEY }}
