@@ -63,7 +63,9 @@ jobs:
       - name: Push to NuGet
         run: |
           dotnet nuget push ./artifacts/*.nupkg --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.nuget-api-key }}
-          dotnet nuget push ./artifacts/*.snupkg --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.nuget-api-key }}
+          if ls ./artifacts/*.snupkg 1>/dev/null 2>&1; then
+            dotnet nuget push ./artifacts/*.snupkg --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.nuget-api-key }}
+          fi
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
