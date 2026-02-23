@@ -45,8 +45,7 @@ namespace MongoRepository
         public virtual Task Add(TEntity entity, InsertOneOptions options = null, CancellationToken cancellationToken = default)
         {
             entity = TrimStrings(entity);
-            return Collection.InsertOneAsync(entity, options, cancellationToken)
-                .ContinueWith(_ => entity, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            return Collection.InsertOneAsync(entity, options, cancellationToken);
         }
 
         public virtual Task AddRange(IEnumerable<TEntity> entities, InsertManyOptions options = null, CancellationToken cancellationToken = default)
