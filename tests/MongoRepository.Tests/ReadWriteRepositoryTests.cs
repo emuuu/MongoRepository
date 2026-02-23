@@ -72,6 +72,16 @@ public class ReadWriteRepositoryTests : IAsyncLifetime
         Assert.Equal("   ", result!.Name);
     }
 
+    [Fact]
+    public async Task Add_DuplicateKey_ThrowsException()
+    {
+        var item = new TestItem { Id = "dup", Name = "First", Value = 1 };
+        await _repo.Add(item);
+
+        var duplicate = new TestItem { Id = "dup", Name = "Second", Value = 2 };
+        await Assert.ThrowsAsync<MongoWriteException>(() => _repo.Add(duplicate));
+    }
+
     // --- CRUD: Add ---
 
     [Fact]
