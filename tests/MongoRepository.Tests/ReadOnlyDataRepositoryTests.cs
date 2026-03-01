@@ -18,13 +18,13 @@ public class ReadOnlyDataRepositoryTests : IAsyncLifetime
         _readRepo = new TestReadOnlyRepository(options);
     }
 
-    public Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         // Clean up collection before each test
-        return _writeRepo.Collection.Database.DropCollectionAsync("TestItems");
+        await _writeRepo.Collection.Database.DropCollectionAsync("TestItems");
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public ValueTask DisposeAsync() => default;
 
     private TestItem CreateItem(string id, string name, int value) =>
         new() { Id = id, Name = name, Value = value };

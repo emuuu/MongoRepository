@@ -15,12 +15,12 @@ public class ReadWriteRepositoryTests : IAsyncLifetime
         _repo = new TestReadWriteRepository(_fixture.CreateOptions());
     }
 
-    public Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
-        return _repo.Collection.Database.DropCollectionAsync("TestItems");
+        await _repo.Collection.Database.DropCollectionAsync("TestItems");
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public ValueTask DisposeAsync() => default;
 
     // --- TrimStrings via Add ---
 

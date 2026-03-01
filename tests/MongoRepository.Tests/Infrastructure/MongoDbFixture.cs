@@ -10,7 +10,7 @@ public class MongoDbFixture : IAsyncLifetime
 
     public string ConnectionString { get; private set; } = null!;
 
-    public Task InitializeAsync()
+    public ValueTask InitializeAsync()
     {
         var options = new MongoRunnerOptions
         {
@@ -20,13 +20,13 @@ public class MongoDbFixture : IAsyncLifetime
         };
         _runner = MongoRunner.Run(options);
         ConnectionString = _runner.ConnectionString;
-        return Task.CompletedTask;
+        return default;
     }
 
-    public Task DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         _runner?.Dispose();
-        return Task.CompletedTask;
+        return default;
     }
 
     public IOptions<MongoDbOptions> CreateOptions()
