@@ -57,4 +57,12 @@ public class EntityContextTests
 
         Assert.NotNull(collection);
     }
+
+    [Fact]
+    public async Task SupportsTransactionsAsync_OnStandalone_ReturnsFalse()
+    {
+        var context = new EntityContext<TestItem>(_fixture.CreateOptions());
+
+        Assert.False(await context.SupportsTransactionsAsync());
+    }
 }

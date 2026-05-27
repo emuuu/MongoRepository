@@ -16,19 +16,31 @@ namespace MongoRepository
 	{
 		protected ReadOnlyDataRepository(IOptions<MongoDbOptions> mongoOptions)
 		{
-			var context = new EntityContext<TEntity>(mongoOptions);
-			Collection = context.Collection(true);
+			_context = new EntityContext<TEntity>(mongoOptions);
+			Collection = _context.Collection(true);
 		}
+
+		private protected readonly EntityContext<TEntity> _context;
 
 		public virtual IMongoCollection<TEntity> Collection { get; }
 
+		/// <summary>
+		/// When a session is provided, reads must execute against the read/write
+		/// collection because sessions are bound to the read/write client; otherwise
+		/// the driver throws <see cref="InvalidOperationException"/>.
+		/// </summary>
+		private IMongoCollection<TEntity> CollectionFor(IClientSessionHandle session)
+			=> session is null ? Collection : _context.Collection(false);
 
-		public virtual async Task<TEntity> Get(TKey id, CancellationToken cancellationToken = default)
+
+		public virtual async Task<TEntity> Get(TKey id, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
 			try
 			{
 				var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
-				return await Collection.Find(filter).FirstOrDefaultAsync(cancellationToken);
+				var collection = CollectionFor(session);
+				var cursor = session is null ? collection.Find(filter) : collection.Find(session, filter);
+				return await cursor.FirstOrDefaultAsync(cancellationToken);
 			}
 			catch (FormatException)
 			{
@@ -42,12 +54,14 @@ namespace MongoRepository
 			}
 		}
 
-		public virtual async Task<List<TEntity>> Get(IEnumerable<TKey> ids, CancellationToken cancellationToken = default)
+		public virtual async Task<List<TEntity>> Get(IEnumerable<TKey> ids, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
 			try
 			{
 				var filter = Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids);
-				return await Collection.Find(filter).ToListAsync(cancellationToken);
+				var collection = CollectionFor(session);
+				var cursor = session is null ? collection.Find(filter) : collection.Find(session, filter);
+				return await cursor.ToListAsync(cancellationToken);
 			}
 			catch (FormatException)
 			{
@@ -59,10 +73,11 @@ namespace MongoRepository
 			}
 		}
 
-		public virtual Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null, CancellationToken cancellationToken = default)
+		public virtual Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
-            return Collection
-                .Find(filterDefinition ?? new BsonDocument())
+			var collection = CollectionFor(session);
+			var filter = filterDefinition ?? new BsonDocument();
+			return (session is null ? collection.Find(filter) : collection.Find(session, filter))
 				.FirstOrDefaultAsync(cancellationToken);
 		}
 
@@ -75,15 +90,20 @@ namespace MongoRepository
 				.FirstOrDefaultAsync(cancellationToken);
         }
 
-        public virtual Task<List<TEntity>> GetAll(CancellationToken cancellationToken = default)
+        public virtual Task<List<TEntity>> GetAll(IClientSessionHandle session = null, CancellationToken cancellationToken = default)
         {
-            return Collection
-				.Find(Builders<TEntity>.Filter.Empty)
-                .ToListAsync(cancellationToken);
+			var collection = CollectionFor(session);
+			var filter = Builders<TEntity>.Filter.Empty;
+			return (session is null ? collection.Find(filter) : collection.Find(session, filter))
+				.ToListAsync(cancellationToken);
         }
 
-		public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
+			var collection = CollectionFor(session);
+			var filter = filterDefinition ?? new BsonDocument();
+			var find = session is null ? collection.Find(filter) : collection.Find(session, filter);
+
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -95,23 +115,21 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-				return Collection
-				.Find(filterDefinition ?? new BsonDocument())
-				.Skip((page - 1) * pageSize)
-				.Limit(pageSize)
-				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
-				.ToListAsync(cancellationToken);
+				return find
+					.Skip((page - 1) * pageSize)
+					.Limit(pageSize)
+					.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
+					.ToListAsync(cancellationToken);
 			}
 			else
 			{
-                return Collection
-                .Find(filterDefinition ?? new BsonDocument())
-				.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
-				.ToListAsync(cancellationToken);
+				return find
+					.Sort(sortDefinition ?? Builders<TEntity>.Sort.Ascending(nameof(IEntity<TKey>.Id)))
+					.ToListAsync(cancellationToken);
 			}
 		}
 
-		public virtual Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
 			JsonFilterDefinition<TEntity> filter = null;
 			if (!string.IsNullOrEmpty(jsonFilterDefinition))
@@ -125,7 +143,7 @@ namespace MongoRepository
 				sorting = new JsonSortDefinition<TEntity>(jsonSortingDefinition);
 			}
 
-			return GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize, cancellationToken);
+			return GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize, session: session, cancellationToken: cancellationToken);
 		}
 
 		[Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v11.")]
@@ -310,21 +328,22 @@ namespace MongoRepository
 		}
 
 
-		public virtual Task<long> Count(FilterDefinition<TEntity> filterDefinition = null, CancellationToken cancellationToken = default)
+		public virtual Task<long> Count(FilterDefinition<TEntity> filterDefinition = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
-            return Collection
-				.Find(filterDefinition ?? new BsonDocument())
+			var collection = CollectionFor(session);
+			var filter = filterDefinition ?? new BsonDocument();
+			return (session is null ? collection.Find(filter) : collection.Find(session, filter))
 				.CountDocumentsAsync(cancellationToken);
 		}
 
-		public virtual Task<long> Count(string jsonFilterDefinition, CancellationToken cancellationToken = default)
+		public virtual Task<long> Count(string jsonFilterDefinition, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
 			JsonFilterDefinition<TEntity> filter = null;
 			if (!string.IsNullOrEmpty(jsonFilterDefinition))
 			{
 				filter = new JsonFilterDefinition<TEntity>(jsonFilterDefinition);
 			}
-			return Count(filterDefinition: filter, cancellationToken);
+			return Count(filterDefinition: filter, session: session, cancellationToken: cancellationToken);
 		}
 
 		public virtual Task<long> Count(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)

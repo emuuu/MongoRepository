@@ -18,26 +18,29 @@ namespace MongoRepository
         /// Gets a single entity by its ID.
         /// </summary>
         /// <param name="id">The unique identifier of the entity.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>The entity with the given ID, or null if not found.</returns>
         /// <exception cref="MongoException">Thrown when the query fails.</exception>
-        Task<TEntity> Get(TKey id, CancellationToken cancellationToken = default);
+        Task<TEntity> Get(TKey id, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets a list of entities matching the given IDs.
         /// </summary>
         /// <param name="ids">The IDs of the entities to retrieve.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of matching entities.</returns>
-        Task<List<TEntity>> Get(IEnumerable<TKey> ids, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> Get(IEnumerable<TKey> ids, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the first entity matching the provided MongoDB filter definition.
         /// </summary>
         /// <param name="filterDefinition">A MongoDB filter definition.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>The first matching entity, or null if none found.</returns>
-        Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null, CancellationToken cancellationToken = default);
+        Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the first entity matching the given LINQ expression filter.
@@ -52,8 +55,10 @@ namespace MongoRepository
         /// <summary>
         /// Gets all entities.
         /// </summary>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
+        /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of entities.</returns>
-        Task<List<TEntity>> GetAll(CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAll(IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities with optional filtering, sorting, and paging.
@@ -62,10 +67,11 @@ namespace MongoRepository
         /// <param name="sortDefinition">Optional sort definition.</param>
         /// <param name="page">The page number (1-based).</param>
         /// <param name="pageSize">The number of items per page.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of entities based on the provided criteria.</returns>
         /// <remarks>Page numbers less than 1 will default to 1.</remarks>
-        Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAll(FilterDefinition<TEntity> filterDefinition, SortDefinition<TEntity> sortDefinition = null, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities using JSON filter and sort definitions with paging.
@@ -74,9 +80,10 @@ namespace MongoRepository
         /// <param name="jsonSortingDefinition">JSON sort as a string.</param>
         /// <param name="page">The page number (1-based).</param>
         /// <param name="pageSize">The number of items per page.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of paged, sorted, and filtered entities.</returns>
-        Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities matching a LINQ filter with optional paging.
@@ -152,17 +159,19 @@ namespace MongoRepository
         /// Counts the number of documents matching the filter definition.
         /// </summary>
         /// <param name="filterDefinition">The MongoDB filter definition.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the count targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The number of matching documents.</returns>
-        Task<long> Count(FilterDefinition<TEntity> filterDefinition = null, CancellationToken cancellationToken = default);
+        Task<long> Count(FilterDefinition<TEntity> filterDefinition = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Counts the number of documents matching the JSON filter.
         /// </summary>
         /// <param name="jsonFilterDefinition">The filter in JSON format.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the count targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The number of matching documents.</returns>
-        Task<long> Count(string jsonFilterDefinition, CancellationToken cancellationToken = default);
+        Task<long> Count(string jsonFilterDefinition, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Counts the number of documents matching the LINQ filter.
