@@ -176,8 +176,11 @@ namespace MongoRepository
 			}
 		}
 
-		public virtual Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
+			var collection = CollectionFor(session);
+			var queryable = session is null ? collection.AsQueryable() : collection.AsQueryable(session);
+
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -189,8 +192,7 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-                return Collection
-                    .AsQueryable()
+				return queryable
 					.OrderBy(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
@@ -198,15 +200,17 @@ namespace MongoRepository
 			}
 			else
 			{
-                return Collection
-                    .AsQueryable()
+				return queryable
 					.OrderBy(sorting)
 					.ToListAsync(cancellationToken);
 			}
 		}
 
-		public virtual Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
+			var collection = CollectionFor(session);
+			var queryable = session is null ? collection.AsQueryable() : collection.AsQueryable(session);
+
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -218,8 +222,7 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-                return Collection
-                    .AsQueryable()
+				return queryable
 					.Where(filter)
 					.OrderBy(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
@@ -228,8 +231,7 @@ namespace MongoRepository
 			}
 			else
 			{
-                return Collection
-                    .AsQueryable()
+				return queryable
 					.Where(filter)
 					.OrderBy(sorting)
 					.ToListAsync(cancellationToken);
@@ -267,8 +269,11 @@ namespace MongoRepository
 			}
 		}
 
-		public virtual Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
+			var collection = CollectionFor(session);
+			var queryable = session is null ? collection.AsQueryable() : collection.AsQueryable(session);
+
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -280,8 +285,7 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-                return Collection
-                    .AsQueryable()
+				return queryable
 					.OrderByDescending(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
@@ -289,15 +293,17 @@ namespace MongoRepository
 			}
 			else
 			{
-                return Collection
-                    .AsQueryable()
+				return queryable
 					.OrderByDescending(sorting)
 					.ToListAsync(cancellationToken);
 			}
 		}
 
-		public virtual Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
+		public virtual Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
+			var collection = CollectionFor(session);
+			var queryable = session is null ? collection.AsQueryable() : collection.AsQueryable(session);
+
 			if (page.HasValue && pageSize.HasValue)
 			{
 				if (page < 1)
@@ -309,9 +315,8 @@ namespace MongoRepository
 					pageSize = 1;
 				}
 
-                return Collection
-                    .AsQueryable()
-                    .Where(filter)
+				return queryable
+					.Where(filter)
 					.OrderByDescending(sorting)
 					.Skip((page.Value - 1) * pageSize.Value)
 					.Take(pageSize.Value)
@@ -319,9 +324,8 @@ namespace MongoRepository
 			}
 			else
 			{
-                return Collection
-                    .AsQueryable()
-                    .Where(filter)
+				return queryable
+					.Where(filter)
 					.OrderByDescending(sorting)
 					.ToListAsync(cancellationToken);
 			}
@@ -346,10 +350,11 @@ namespace MongoRepository
 			return Count(filterDefinition: filter, session: session, cancellationToken: cancellationToken);
 		}
 
-		public virtual Task<long> Count(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
+		public virtual Task<long> Count(Expression<Func<TEntity, bool>> filter, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
-            return Collection
-				.AsQueryable()
+			var collection = CollectionFor(session);
+			var queryable = session is null ? collection.AsQueryable() : collection.AsQueryable(session);
+			return queryable
 				.Where(filter)
 				.LongCountAsync(cancellationToken);
 		}

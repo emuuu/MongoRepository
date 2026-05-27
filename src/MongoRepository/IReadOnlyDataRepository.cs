@@ -104,9 +104,10 @@ namespace MongoRepository
         /// <param name="sorting">The sorting expression.</param>
         /// <param name="page">The page number (1-based).</param>
         /// <param name="pageSize">The number of items per page.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of sorted and optionally paged entities.</returns>
-        Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities matching the filter and sorted by the given expression with optional paging.
@@ -116,9 +117,10 @@ namespace MongoRepository
         /// <param name="sorting">The sorting expression.</param>
         /// <param name="page">The page number (1-based).</param>
         /// <param name="pageSize">The number of items per page.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of filtered, sorted, and optionally paged entities.</returns>
-        Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities matching the filter in descending order with optional paging.
@@ -139,9 +141,10 @@ namespace MongoRepository
         /// <param name="sorting">The sorting expression.</param>
         /// <param name="page">The page number.</param>
         /// <param name="pageSize">The page size.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A list of sorted entities.</returns>
-        Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets all entities matching the filter and sorts them in descending order by the given property with optional paging.
@@ -151,9 +154,10 @@ namespace MongoRepository
         /// <param name="sorting">The sorting expression.</param>
         /// <param name="page">The page number.</param>
         /// <param name="pageSize">The page size.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A list of filtered and sorted entities.</returns>
-        Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
+        Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Counts the number of documents matching the filter definition.
@@ -177,8 +181,9 @@ namespace MongoRepository
         /// Counts the number of documents matching the LINQ filter.
         /// </summary>
         /// <param name="filter">The filter expression.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the count targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>The number of matching documents.</returns>
-        Task<long> Count(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
+        Task<long> Count(Expression<Func<TEntity, bool>> filter, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
     }
 }

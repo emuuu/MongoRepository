@@ -194,4 +194,50 @@ public class TransactionTests : IAsyncLifetime
         var ex = await Assert.ThrowsAsync<MongoWriteException>(() => repo.Add(collision, session: session));
         Assert.Equal(ServerErrorCategory.DuplicateKey, ex.WriteError?.Category);
     }
+
+    // Re-review gap: prove DuplicateKey is surfaced inside an open Mongo
+    // transaction too, not only outside one. Sparse compound unique index is
+    // pre-seeded so the first insert sits in the collection; the second insert
+    // collides INSIDE the transaction and must throw, then the transaction is
+    // aborted so the test stays idempotent.
+    [Fact]
+    public async Task Add_WithSession_InsideTransaction_SparseCompoundUniqueViolation_ThrowsMongoWriteException()
+    {
+        var repo = new OriginMarkerItemRepository(_fixture.CreateOptions());
+        await repo.Collection.Database.DropCollectionAsync("OriginMarkerItems");
+
+        var indexKeys = Builders<OriginMarkerItem>.IndexKeys
+            .Ascending(x => x.OriginEventId)
+            .Ascending(x => x.OriginDiscriminator);
+        var indexOptions = new CreateIndexOptions { Unique = true, Sparse = true };
+        await repo.Collection.Indexes.CreateOneAsync(
+            new CreateIndexModel<OriginMarkerItem>(indexKeys, indexOptions));
+
+        await repo.Add(new OriginMarkerItem
+        {
+            Id = ObjectId.GenerateNewId().ToString(),
+            OriginEventId = "tx-event-1",
+            OriginDiscriminator = "tx-item-1"
+        });
+
+        using var session = await repo.StartSessionAsync();
+        session.StartTransaction();
+
+        try
+        {
+            var collision = new OriginMarkerItem
+            {
+                Id = ObjectId.GenerateNewId().ToString(),
+                OriginEventId = "tx-event-1",
+                OriginDiscriminator = "tx-item-1"
+            };
+
+            var ex = await Assert.ThrowsAsync<MongoWriteException>(() => repo.Add(collision, session: session));
+            Assert.Equal(ServerErrorCategory.DuplicateKey, ex.WriteError?.Category);
+        }
+        finally
+        {
+            await session.AbortTransactionAsync();
+        }
+    }
 }

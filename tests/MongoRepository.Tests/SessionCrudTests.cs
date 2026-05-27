@@ -283,4 +283,108 @@ public class SessionCrudTests : IAsyncLifetime
 
         await session.AbortTransactionAsync();
     }
+
+    // --- LINQ-Expression overloads (AsQueryable-based) ---
+
+    [Fact]
+    public async Task GetAll_LinqSort_WithSession_SeesUncommittedInserts()
+    {
+        using var session = await _repo.StartSessionAsync();
+        session.StartTransaction();
+
+        await _repo.AddRange(new[]
+        {
+            new TestItem { Id = "ls1", Name = "A", Value = 1 },
+            new TestItem { Id = "ls2", Name = "B", Value = 3 },
+            new TestItem { Id = "ls3", Name = "C", Value = 2 }
+        }, session: session);
+
+        var insideTx = await _repo.GetAll<int>(x => x.Value, session: session);
+        Assert.Equal(new[] { 1, 2, 3 }, insideTx.Select(x => x.Value));
+
+        var outsideTx = await _repo.GetAll<int>(x => x.Value);
+        Assert.Empty(outsideTx);
+
+        await session.AbortTransactionAsync();
+    }
+
+    [Fact]
+    public async Task GetAll_LinqFilterSort_WithSession_SeesUncommittedInserts()
+    {
+        using var session = await _repo.StartSessionAsync();
+        session.StartTransaction();
+
+        await _repo.AddRange(new[]
+        {
+            new TestItem { Id = "lfs1", Name = "Match", Value = 1 },
+            new TestItem { Id = "lfs2", Name = "Skip", Value = 2 },
+            new TestItem { Id = "lfs3", Name = "Match", Value = 3 }
+        }, session: session);
+
+        var insideTx = await _repo.GetAll<int>(x => x.Name == "Match", x => x.Value, session: session);
+        Assert.Equal(2, insideTx.Count);
+        Assert.All(insideTx, item => Assert.Equal("Match", item.Name));
+
+        await session.AbortTransactionAsync();
+    }
+
+    [Fact]
+    public async Task GetAllDescending_LinqSort_WithSession_SeesUncommittedInserts()
+    {
+        using var session = await _repo.StartSessionAsync();
+        session.StartTransaction();
+
+        await _repo.AddRange(new[]
+        {
+            new TestItem { Id = "lds1", Name = "A", Value = 1 },
+            new TestItem { Id = "lds2", Name = "B", Value = 3 },
+            new TestItem { Id = "lds3", Name = "C", Value = 2 }
+        }, session: session);
+
+        var insideTx = await _repo.GetAllDescending<int>(x => x.Value, session: session);
+        Assert.Equal(new[] { 3, 2, 1 }, insideTx.Select(x => x.Value));
+
+        await session.AbortTransactionAsync();
+    }
+
+    [Fact]
+    public async Task GetAllDescending_LinqFilterSort_WithSession_SeesUncommittedInserts()
+    {
+        using var session = await _repo.StartSessionAsync();
+        session.StartTransaction();
+
+        await _repo.AddRange(new[]
+        {
+            new TestItem { Id = "ldfs1", Name = "Match", Value = 10 },
+            new TestItem { Id = "ldfs2", Name = "Skip", Value = 20 },
+            new TestItem { Id = "ldfs3", Name = "Match", Value = 30 }
+        }, session: session);
+
+        var insideTx = await _repo.GetAllDescending<int>(x => x.Name == "Match", x => x.Value, session: session);
+        Assert.Equal(new[] { 30, 10 }, insideTx.Select(x => x.Value));
+
+        await session.AbortTransactionAsync();
+    }
+
+    [Fact]
+    public async Task Count_LinqExpression_WithSession_SeesUncommittedInserts()
+    {
+        using var session = await _repo.StartSessionAsync();
+        session.StartTransaction();
+
+        await _repo.AddRange(new[]
+        {
+            new TestItem { Id = "cle1", Name = "A", Value = 5 },
+            new TestItem { Id = "cle2", Name = "B", Value = 15 },
+            new TestItem { Id = "cle3", Name = "C", Value = 25 }
+        }, session: session);
+
+        var insideTx = await _repo.Count(x => x.Value >= 10, session: session);
+        Assert.Equal(2, insideTx);
+
+        var outsideTx = await _repo.Count(x => x.Value >= 10);
+        Assert.Equal(0, outsideTx);
+
+        await session.AbortTransactionAsync();
+    }
 }

@@ -109,9 +109,18 @@ namespace MongoRepository
 
         /// <summary>
         /// Returns <c>true</c> when the underlying cluster supports multi-document
-        /// transactions (ReplicaSet or LoadBalanced topology). Returns <c>false</c>
-        /// for standalone deployments.
+        /// transactions: ReplicaSet, Sharded, or LoadBalanced topology, or a
+        /// direct connection (<c>directConnection=true</c>) to a replica set
+        /// member or shard router. Returns <c>false</c> for standalone deployments
+        /// and for any failure during the capability probe.
         /// </summary>
+        /// <remarks>
+        /// Each call performs a <c>ping</c> on the <c>admin</c> database to force
+        /// server discovery; the result is not cached. Cluster topology can change
+        /// at runtime (failover, reconfig), and a transient probe failure during
+        /// such a window returns <c>false</c> — connection issues surface again on
+        /// the next real operation, which is the right place to handle them.
+        /// </remarks>
         Task<bool> SupportsTransactionsAsync(CancellationToken cancellationToken = default);
 
         /// <summary>

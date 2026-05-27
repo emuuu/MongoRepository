@@ -16,14 +16,18 @@ public class StandaloneTransactionTests
     }
 
     [Fact]
-    public async Task ExecuteInTransactionAsync_OnStandalone_ThrowsFromDriver()
+    public async Task ExecuteInTransactionAsync_OnStandalone_ThrowsNotSupported()
     {
-        // Standalone Mongo does not support multi-document transactions. The
-        // driver throws when StartTransaction is invoked. Capability detection
-        // (SupportsTransactionsAsync) already returns false here; this test
-        // proves that ignoring that signal still fails loudly rather than
-        // silently running outside a transaction.
-        await Assert.ThrowsAnyAsync<Exception>(async () =>
+        // Force cluster discovery so the driver knows the topology is Standalone
+        // before StartTransaction. Without the prior probe the driver may attempt
+        // a retryable write and surface a MongoCommandException instead.
+        Assert.False(await _repo.SupportsTransactionsAsync());
+
+        // Standalone Mongo does not support transactions; the driver's
+        // EnsureTransactionsAreSupported throws on StartTransaction. Confirm the
+        // wrapper surfaces it loudly rather than degrading silently to a
+        // non-transactional run.
+        await Assert.ThrowsAsync<NotSupportedException>(async () =>
         {
             await _repo.ExecuteInTransactionAsync(async (session, ct) =>
             {

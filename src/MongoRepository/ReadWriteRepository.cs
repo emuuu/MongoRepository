@@ -129,10 +129,20 @@ namespace MongoRepository
 
         /// <summary>
         /// Returns <c>true</c> when the underlying cluster supports multi-document
-        /// transactions (ReplicaSet or LoadBalanced topology). Returns <c>false</c>
-        /// for standalone deployments. Use this to gate transactional code paths
-        /// before calling <see cref="ExecuteInTransactionAsync"/>.
+        /// transactions: ReplicaSet, Sharded, or LoadBalanced topology, or a
+        /// direct connection (<c>directConnection=true</c>) to a replica set
+        /// member or shard router. Returns <c>false</c> for standalone deployments
+        /// and for any failure during the capability probe (so the result is safe
+        /// to gate logic on without an extra try/catch). Use this to gate
+        /// transactional code paths before calling
+        /// <see cref="ExecuteInTransactionAsync"/>.
         /// </summary>
+        /// <remarks>
+        /// Each call performs a <c>ping</c> on the <c>admin</c> database to force
+        /// server discovery; the result is not cached because cluster topology can
+        /// change at runtime (failover, reconfig). Callers that need to gate hot
+        /// paths should cache the result themselves.
+        /// </remarks>
         public virtual Task<bool> SupportsTransactionsAsync(CancellationToken cancellationToken = default)
             => _context.SupportsTransactionsAsync(cancellationToken);
 
