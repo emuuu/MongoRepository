@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoRepository.Tests.Infrastructure;
 
@@ -101,5 +102,42 @@ public class TransactionTests : IAsyncLifetime
 
         var afterAbort = await _repo.Get("tx-participate");
         Assert.Null(afterAbort);
+    }
+
+    // Companion to ReadWriteRepositoryTests.Add_SparseCompoundUniqueViolation:
+    // proves the duplicate-key exception is surfaced on the session-bound path as
+    // well, not just the sessionless overload.
+    [Fact]
+    public async Task Add_WithSession_SparseCompoundUniqueViolation_ThrowsMongoWriteException()
+    {
+        var repo = new OriginMarkerItemRepository(_fixture.CreateOptions());
+        await repo.Collection.Database.DropCollectionAsync("OriginMarkerItems");
+
+        var indexKeys = Builders<OriginMarkerItem>.IndexKeys
+            .Ascending(x => x.OriginEventId)
+            .Ascending(x => x.OriginDiscriminator);
+        var indexOptions = new CreateIndexOptions { Unique = true, Sparse = true };
+        await repo.Collection.Indexes.CreateOneAsync(
+            new CreateIndexModel<OriginMarkerItem>(indexKeys, indexOptions));
+
+        using var session = await repo.StartSessionAsync();
+
+        var first = new OriginMarkerItem
+        {
+            Id = ObjectId.GenerateNewId().ToString(),
+            OriginEventId = "session-event-1",
+            OriginDiscriminator = "session-item-1"
+        };
+        await repo.Add(first, session: session);
+
+        var collision = new OriginMarkerItem
+        {
+            Id = ObjectId.GenerateNewId().ToString(),
+            OriginEventId = "session-event-1",
+            OriginDiscriminator = "session-item-1"
+        };
+
+        var ex = await Assert.ThrowsAsync<MongoWriteException>(() => repo.Add(collision, session: session));
+        Assert.Equal(ServerErrorCategory.DuplicateKey, ex.WriteError?.Category);
     }
 }

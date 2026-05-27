@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation site with API reference (Blazor WebAssembly + GitHub Pages)
 - GitHub Actions CI/CD workflows
 - Health check add-on package (`MongoGenericRepository.HealthChecks`)
+- Regression tests confirming `MongoWriteException` with `ServerErrorCategory.DuplicateKey` is surfaced for sparse unique compound index violations, both on the sessionless and the session-bound `Add` path. The first document persists; subsequent inserts with the same compound key are rejected.
 
 ### [10.2.0]
 
