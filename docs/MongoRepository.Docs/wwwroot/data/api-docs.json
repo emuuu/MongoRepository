@@ -22,6 +22,18 @@
         "kind": "Method",
         "type": "IMongoCollection\u003CTEntity\u003E",
         "description": ""
+      },
+      {
+        "name": "StartSessionAsync(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CIClientSessionHandle\u003E",
+        "description": ""
+      },
+      {
+        "name": "SupportsTransactionsAsync(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Cbool\u003E",
+        "description": ""
       }
     ]
   },
@@ -57,19 +69,19 @@
     "description": "Defines read-only operations for a MongoDB-backed data repository.",
     "members": [
       {
-        "name": "Get(TKey id, CancellationToken cancellationToken)",
+        "name": "Get(TKey id, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTEntity\u003E",
         "description": ""
       },
       {
-        "name": "Get(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "name": "Get(IEnumerable\u003CTKey\u003E ids, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "Get(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "name": "Get(FilterDefinition\u003CTEntity\u003E filterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTEntity\u003E",
         "description": ""
@@ -81,19 +93,19 @@
         "description": ""
       },
       {
-        "name": "GetAll(CancellationToken cancellationToken)",
+        "name": "GetAll(IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAll(FilterDefinition\u003CTEntity\u003E filterDefinition, SortDefinition\u003CTEntity\u003E sortDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(FilterDefinition\u003CTEntity\u003E filterDefinition, SortDefinition\u003CTEntity\u003E sortDefinition, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
@@ -105,13 +117,13 @@
         "description": ""
       },
       {
-        "name": "GetAll(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
@@ -123,31 +135,31 @@
         "description": ""
       },
       {
-        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "Count(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "name": "Count(FilterDefinition\u003CTEntity\u003E filterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003Clong\u003E",
         "description": ""
       },
       {
-        "name": "Count(string jsonFilterDefinition, CancellationToken cancellationToken)",
+        "name": "Count(string jsonFilterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003Clong\u003E",
         "description": ""
       },
       {
-        "name": "Count(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "name": "Count(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003Clong\u003E",
         "description": ""
@@ -160,51 +172,69 @@
     "description": "Defines read and write operations for a MongoDB-backed data repository.",
     "members": [
       {
-        "name": "Add(TEntity entity, InsertOneOptions options, CancellationToken cancellationToken)",
+        "name": "Add(TEntity entity, InsertOneOptions options, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task",
         "description": ""
       },
       {
-        "name": "AddRange(IEnumerable\u003CTEntity\u003E entities, InsertManyOptions options, CancellationToken cancellationToken)",
+        "name": "AddRange(IEnumerable\u003CTEntity\u003E entities, InsertManyOptions options, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task",
         "description": ""
       },
       {
-        "name": "Update(TEntity entity, ReplaceOptions replaceOptions, CancellationToken cancellationToken)",
+        "name": "Update(TEntity entity, ReplaceOptions replaceOptions, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CReplaceOneResult\u003E",
         "description": ""
       },
       {
-        "name": "Update(IEnumerable\u003CTEntity\u003E entities, BulkWriteOptions bulkWriteOptions, CancellationToken cancellationToken)",
+        "name": "Update(IEnumerable\u003CTEntity\u003E entities, BulkWriteOptions bulkWriteOptions, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CBulkWriteResult\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "Delete(TKey id, CancellationToken cancellationToken)",
+        "name": "Delete(TKey id, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
         "description": ""
       },
       {
-        "name": "Delete(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "name": "Delete(IEnumerable\u003CTKey\u003E ids, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
         "description": ""
       },
       {
-        "name": "Delete(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "name": "Delete(FilterDefinition\u003CTEntity\u003E filterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
         "description": ""
       },
       {
-        "name": "Delete(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "name": "Delete(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "StartSessionAsync(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CIClientSessionHandle\u003E",
+        "description": ""
+      },
+      {
+        "name": "SupportsTransactionsAsync(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Cbool\u003E",
+        "description": ""
+      },
+      {
+        "name": "ExecuteInTransactionAsync(Func\u003CIClientSessionHandle, CancellationToken, Task\u003E work, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task",
         "description": ""
       }
     ]
@@ -291,19 +321,19 @@
         "description": ""
       },
       {
-        "name": "Get(TKey id, CancellationToken cancellationToken)",
+        "name": "Get(TKey id, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTEntity\u003E",
         "description": ""
       },
       {
-        "name": "Get(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "name": "Get(IEnumerable\u003CTKey\u003E ids, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "Get(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "name": "Get(FilterDefinition\u003CTEntity\u003E filterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTEntity\u003E",
         "description": ""
@@ -315,19 +345,19 @@
         "description": ""
       },
       {
-        "name": "GetAll(CancellationToken cancellationToken)",
+        "name": "GetAll(IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAll(FilterDefinition\u003CTEntity\u003E filterDefinition, SortDefinition\u003CTEntity\u003E sortDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(FilterDefinition\u003CTEntity\u003E filterDefinition, SortDefinition\u003CTEntity\u003E sortDefinition, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(string jsonFilterDefinition, string jsonSortingDefinition, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
@@ -339,13 +369,13 @@
         "description": ""
       },
       {
-        "name": "GetAll(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
@@ -357,31 +387,31 @@
         "description": ""
       },
       {
-        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, CancellationToken cancellationToken)",
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "Count(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "name": "Count(FilterDefinition\u003CTEntity\u003E filterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003Clong\u003E",
         "description": ""
       },
       {
-        "name": "Count(string jsonFilterDefinition, CancellationToken cancellationToken)",
+        "name": "Count(string jsonFilterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003Clong\u003E",
         "description": ""
       },
       {
-        "name": "Count(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "name": "Count(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003Clong\u003E",
         "description": ""
@@ -400,51 +430,69 @@
         "description": ""
       },
       {
-        "name": "Add(TEntity entity, InsertOneOptions options, CancellationToken cancellationToken)",
+        "name": "Add(TEntity entity, InsertOneOptions options, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task",
         "description": ""
       },
       {
-        "name": "AddRange(IEnumerable\u003CTEntity\u003E entities, InsertManyOptions options, CancellationToken cancellationToken)",
+        "name": "AddRange(IEnumerable\u003CTEntity\u003E entities, InsertManyOptions options, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task",
         "description": ""
       },
       {
-        "name": "Update(TEntity entity, ReplaceOptions replaceOptions, CancellationToken cancellationToken)",
+        "name": "Update(TEntity entity, ReplaceOptions replaceOptions, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CReplaceOneResult\u003E",
         "description": ""
       },
       {
-        "name": "Update(IEnumerable\u003CTEntity\u003E entities, BulkWriteOptions bulkWriteOptions, CancellationToken cancellationToken)",
+        "name": "Update(IEnumerable\u003CTEntity\u003E entities, BulkWriteOptions bulkWriteOptions, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CBulkWriteResult\u003CTEntity\u003E\u003E",
         "description": ""
       },
       {
-        "name": "Delete(TKey id, CancellationToken cancellationToken)",
+        "name": "Delete(TKey id, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
         "description": ""
       },
       {
-        "name": "Delete(IEnumerable\u003CTKey\u003E ids, CancellationToken cancellationToken)",
+        "name": "Delete(IEnumerable\u003CTKey\u003E ids, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
         "description": ""
       },
       {
-        "name": "Delete(FilterDefinition\u003CTEntity\u003E filterDefinition, CancellationToken cancellationToken)",
+        "name": "Delete(FilterDefinition\u003CTEntity\u003E filterDefinition, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
         "description": ""
       },
       {
-        "name": "Delete(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, CancellationToken cancellationToken)",
+        "name": "Delete(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CDeleteResult\u003E",
+        "description": ""
+      },
+      {
+        "name": "StartSessionAsync(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CIClientSessionHandle\u003E",
+        "description": ""
+      },
+      {
+        "name": "SupportsTransactionsAsync(CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003Cbool\u003E",
+        "description": ""
+      },
+      {
+        "name": "ExecuteInTransactionAsync(Func\u003CIClientSessionHandle, CancellationToken, Task\u003E work, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task",
         "description": ""
       }
     ]
