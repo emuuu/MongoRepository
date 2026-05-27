@@ -1,3 +1,4 @@
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoRepository.Tests.Infrastructure;
 
@@ -80,6 +81,44 @@ public class ReadWriteRepositoryTests : IAsyncLifetime
 
         var duplicate = new TestItem { Id = "dup", Name = "Second", Value = 2 };
         await Assert.ThrowsAsync<MongoWriteException>(() => _repo.Add(duplicate));
+    }
+
+    // Regression for fm.appdesk diagnosis that Add() swallows MongoWriteException
+    // when the violated constraint is a sparse compound unique index rather than the
+    // default _id unique index.
+    [Fact]
+    public async Task Add_SparseCompoundUniqueViolation_ThrowsMongoWriteException()
+    {
+        var repo = new OriginMarkerItemRepository(_fixture.CreateOptions());
+        await repo.Collection.Database.DropCollectionAsync("OriginMarkerItems");
+
+        var indexKeys = Builders<OriginMarkerItem>.IndexKeys
+            .Ascending(x => x.OriginEventId)
+            .Ascending(x => x.OriginDiscriminator);
+        var indexOptions = new CreateIndexOptions { Unique = true, Sparse = true };
+        await repo.Collection.Indexes.CreateOneAsync(
+            new CreateIndexModel<OriginMarkerItem>(indexKeys, indexOptions));
+
+        var first = new OriginMarkerItem
+        {
+            Id = ObjectId.GenerateNewId().ToString(),
+            OriginEventId = "event-1",
+            OriginDiscriminator = "item-1"
+        };
+        await repo.Add(first);
+
+        var collision = new OriginMarkerItem
+        {
+            Id = ObjectId.GenerateNewId().ToString(),
+            OriginEventId = "event-1",
+            OriginDiscriminator = "item-1"
+        };
+
+        var ex = await Assert.ThrowsAsync<MongoWriteException>(() => repo.Add(collision));
+        Assert.Equal(ServerErrorCategory.DuplicateKey, ex.WriteError?.Category);
+
+        var count = await repo.Collection.CountDocumentsAsync(Builders<OriginMarkerItem>.Filter.Empty);
+        Assert.Equal(1, count);
     }
 
     // --- CRUD: Add ---

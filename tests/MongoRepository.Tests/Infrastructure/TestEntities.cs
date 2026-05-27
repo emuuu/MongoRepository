@@ -26,3 +26,15 @@ public class PlainEntity : IEntity<string>
 
     public string? Name { get; set; }
 }
+
+[EntityDatabase("TestDb")]
+[EntityCollection("OriginMarkerItems")]
+public class OriginMarkerItem : IEntity<string>
+{
+    [BsonId]
+    public string Id { get; set; } = null!;
+
+    public string? OriginEventId { get; set; }
+
+    public string? OriginDiscriminator { get; set; }
+}

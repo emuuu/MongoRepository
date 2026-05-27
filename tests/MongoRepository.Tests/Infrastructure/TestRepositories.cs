@@ -22,3 +22,10 @@ public class PlainEntityRepository : ReadWriteRepository<PlainEntity, string>
     {
     }
 }
+
+public class OriginMarkerItemRepository : ReadWriteRepository<OriginMarkerItem, string>
+{
+    public OriginMarkerItemRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+    {
+    }
+}
