@@ -1,18 +1,18 @@
 <Project>
   <PropertyGroup>
-    <MongoGenericRepositoryVersion>10.2.0</MongoGenericRepositoryVersion>
+    <MongoGenericRepositoryVersion>11.0.0</MongoGenericRepositoryVersion>
     <PackageReleaseNotes>
-    Bug fixes, performance improvements, and API cleanup
+    Multi-document transaction support — breaking signature change.
 
-    - Fix NullReferenceException in paged GetAll/GetAllDescending methods when page/pageSize are null
-    - Fix missing OrderByDescending in GetAllDescending(filter) overload
-    - Fix TargetFramework conflict in csproj that broke multi-targeting
-    - Cache MongoClient instances per connection string to avoid connection pool waste
-    - Fix string trimming in AddRange/Update(bulk) to respect BsonIgnoreAttribute
-    - Fix HealthCheck: reuse cached MongoClient, correct skip-status reporting, filter null exceptions
-    - Mark broken/unusable method overloads as [Obsolete] (Get, GetAll, GetAllDescending with unused TProperty)
-    - Remove unused IRepository interface
-    - Fix XML-Doc param syntax in EntityCollectionAttribute and EntityDatabaseAttribute
+    Added:
+    - StartSessionAsync, SupportsTransactionsAsync, ExecuteInTransactionAsync on IReadWriteRepository.
+    - Optional IClientSessionHandle parameter on all non-obsolete read and mutation methods.
+    - When a session is supplied to a read method, the read targets the read/write collection (sessions are client-bound; cross-client reads would throw).
+
+    Breaking:
+    - The optional IClientSessionHandle parameter is inserted before CancellationToken. Positional callers like repo.Get(id, ct) must switch to repo.Get(id, cancellationToken: ct). External implementers of IReadOnlyDataRepository / IReadWriteRepository must add the new parameters.
+
+    See CHANGELOG.md for the full migration notes.
     </PackageReleaseNotes>
     
     <!-- Gemeinsame Metadaten für alle Pakete -->

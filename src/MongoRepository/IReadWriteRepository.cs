@@ -117,10 +117,17 @@ namespace MongoRepository
         /// <summary>
         /// Executes <paramref name="work"/> inside a Mongo transaction, committing on
         /// success and aborting on exception. Internally uses the driver's
-        /// <c>IClientSessionHandle.WithTransactionAsync</c>, which retries the work
-        /// delegate automatically on TransientTransactionError and
-        /// UnknownTransactionCommitResult errors — the delegate must be idempotent.
+        /// <c>IClientSessionHandle.WithTransactionAsync</c>, which retries the
+        /// transaction automatically on TransientTransactionError and
+        /// UnknownTransactionCommitResult errors.
         /// </summary>
+        /// <remarks>
+        /// The work delegate may run more than once — keep it idempotent, do not
+        /// trigger non-repeatable side effects (HTTP/messaging/file IO), and do
+        /// not catch-and-suppress exceptions inside it. Every repository call
+        /// invoked from within the delegate must pass the supplied session,
+        /// otherwise it runs outside the transaction and breaks atomicity.
+        /// </remarks>
         Task ExecuteInTransactionAsync(Func<IClientSessionHandle, CancellationToken, Task> work, CancellationToken cancellationToken = default);
     }
 }

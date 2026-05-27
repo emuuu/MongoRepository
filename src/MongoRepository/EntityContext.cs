@@ -78,17 +78,40 @@ namespace MongoRepository
 
 		/// <summary>
 		/// Returns <c>true</c> when the underlying cluster supports multi-document
-		/// transactions (ReplicaSet, Sharded, or LoadBalanced topology, or a direct
-		/// connection to a replica set member). Returns <c>false</c> for standalone
-		/// deployments.
+		/// transactions: ReplicaSet, Sharded, or LoadBalanced topology, or a
+		/// direct connection to a replica set member or shard router. Returns
+		/// <c>false</c> for standalone deployments and for any failure during
+		/// the capability probe (connection refused, authentication denied,
+		/// timeout, ...). This is a best-effort check — connection problems
+		/// surface again on the next real operation, which is the right place
+		/// to handle them.
 		/// </summary>
+		/// <remarks>
+		/// Each call performs a <c>ping</c> on the <c>admin</c> database to
+		/// force server discovery (the driver leaves <c>Cluster.Description.Type</c>
+		/// as <c>Unknown</c> until the first operation). The result is not
+		/// cached because cluster topology can change at runtime (failover,
+		/// reconfig); callers that need to gate hot paths should cache the
+		/// result themselves.
+		/// </remarks>
 		public async Task<bool> SupportsTransactionsAsync(CancellationToken cancellationToken = default)
 		{
-			// Cluster.Description.Type stays Unknown until the driver has performed
-			// server discovery. A ping forces it without writing anything.
-			await _readWriteDatabase.Client.GetDatabase("admin")
-				.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1), cancellationToken: cancellationToken)
-				.ConfigureAwait(false);
+			try
+			{
+				// Cluster.Description.Type stays Unknown until the driver has performed
+				// server discovery. A ping forces it without writing anything.
+				await _readWriteDatabase.Client.GetDatabase("admin")
+					.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1), cancellationToken: cancellationToken)
+					.ConfigureAwait(false);
+			}
+			catch (OperationCanceledException)
+			{
+				throw;
+			}
+			catch
+			{
+				return false;
+			}
 
 			var description = _readWriteDatabase.Client.Cluster.Description;
 

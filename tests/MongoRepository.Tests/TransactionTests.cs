@@ -104,6 +104,60 @@ public class TransactionTests : IAsyncLifetime
         Assert.Null(afterAbort);
     }
 
+    [Fact]
+    public async Task ExecuteInTransactionAsync_AcrossTwoRepositories_CommitsBothAtomically()
+    {
+        var markerRepo = new OriginMarkerItemRepository(_fixture.CreateOptions());
+        await markerRepo.Collection.Database.DropCollectionAsync("OriginMarkerItems");
+
+        await _repo.ExecuteInTransactionAsync(async (session, ct) =>
+        {
+            await _repo.Add(new TestItem { Id = "cross-1", Name = "Alpha", Value = 1 }, session: session, cancellationToken: ct);
+            await markerRepo.Add(new OriginMarkerItem { Id = "marker-1", OriginEventId = "e1", OriginDiscriminator = "d1" }, session: session, cancellationToken: ct);
+        });
+
+        Assert.NotNull(await _repo.Get("cross-1"));
+        Assert.NotNull(await markerRepo.Get("marker-1"));
+    }
+
+    [Fact]
+    public async Task ExecuteInTransactionAsync_AcrossTwoRepositories_AbortsBothAtomically()
+    {
+        var markerRepo = new OriginMarkerItemRepository(_fixture.CreateOptions());
+        await markerRepo.Collection.Database.DropCollectionAsync("OriginMarkerItems");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await _repo.ExecuteInTransactionAsync(async (session, ct) =>
+            {
+                await _repo.Add(new TestItem { Id = "cross-abort", Name = "Alpha", Value = 1 }, session: session, cancellationToken: ct);
+                await markerRepo.Add(new OriginMarkerItem { Id = "marker-abort", OriginEventId = "e2", OriginDiscriminator = "d2" }, session: session, cancellationToken: ct);
+                throw new InvalidOperationException("rollback both");
+            });
+        });
+
+        Assert.Null(await _repo.Get("cross-abort"));
+        Assert.Null(await markerRepo.Get("marker-abort"));
+    }
+
+    [Fact]
+    public async Task ExecuteInTransactionAsync_PropagatesCancellation()
+    {
+        using var cts = new CancellationTokenSource();
+
+        var thrown = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await _repo.ExecuteInTransactionAsync(async (session, ct) =>
+            {
+                await _repo.Add(new TestItem { Id = "tx-cancel", Name = "Alpha", Value = 1 }, session: session, cancellationToken: ct);
+                cts.Cancel();
+                ct.ThrowIfCancellationRequested();
+            }, cts.Token);
+        });
+
+        Assert.Null(await _repo.Get("tx-cancel"));
+    }
+
     // Companion to ReadWriteRepositoryTests.Add_SparseCompoundUniqueViolation:
     // proves the duplicate-key exception is surfaced on the session-bound path as
     // well, not just the sessionless overload.

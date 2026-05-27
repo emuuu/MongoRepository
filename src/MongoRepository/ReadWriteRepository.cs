@@ -139,15 +139,28 @@ namespace MongoRepository
         /// <summary>
         /// Executes <paramref name="work"/> inside a Mongo transaction, committing on
         /// success and aborting on exception. Wraps the driver's
-        /// <c>IClientSessionHandle.WithTransactionAsync</c>, which retries the work
-        /// delegate automatically on <c>TransientTransactionError</c> and
+        /// <c>IClientSessionHandle.WithTransactionAsync</c>, which retries the
+        /// transaction automatically on <c>TransientTransactionError</c> and
         /// <c>UnknownTransactionCommitResult</c> errors.
         /// </summary>
         /// <remarks>
-        /// The <paramref name="work"/> delegate may run more than once on transient
-        /// errors — make it idempotent. Requires a cluster that supports
-        /// transactions; check <see cref="SupportsTransactionsAsync"/> first when
-        /// running against mixed topologies.
+        /// <para><b>The <paramref name="work"/> delegate may be invoked more than once.</b>
+        /// On transient errors the driver retries the entire transaction, so the
+        /// delegate must be idempotent: no external side effects (HTTP calls,
+        /// message publishes, file writes) that cannot be repeated, no in-memory
+        /// state mutation outside the transaction, and no caught-and-suppressed
+        /// exceptions inside the delegate — swallowing exceptions hides the
+        /// signal the driver needs to abort and retry.</para>
+        /// <para><b>Every repository call inside the delegate must pass the supplied
+        /// session.</b> Operations invoked without the <c>session</c> argument
+        /// (or against a different repository instance not wired through the same
+        /// session) run outside the transaction and break atomicity. Read methods
+        /// also accept an <c>IClientSessionHandle</c> overload; use it for
+        /// read-your-own-writes consistency inside the transaction.</para>
+        /// <para>Requires a cluster that supports transactions; check
+        /// <see cref="SupportsTransactionsAsync"/> first when running against
+        /// mixed topologies. On standalone the driver throws on
+        /// <c>StartTransaction</c>.</para>
         /// </remarks>
         public virtual async Task ExecuteInTransactionAsync(
             Func<IClientSessionHandle, CancellationToken, Task> work,
