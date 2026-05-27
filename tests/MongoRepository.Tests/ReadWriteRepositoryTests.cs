@@ -83,9 +83,8 @@ public class ReadWriteRepositoryTests : IAsyncLifetime
         await Assert.ThrowsAsync<MongoWriteException>(() => _repo.Add(duplicate));
     }
 
-    // Regression for fm.appdesk diagnosis that Add() swallows MongoWriteException
-    // when the violated constraint is a sparse compound unique index rather than the
-    // default _id unique index.
+    // Regression: Add() must surface MongoWriteException for sparse compound
+    // unique index violations, not only for the default _id unique index.
     [Fact]
     public async Task Add_SparseCompoundUniqueViolation_ThrowsMongoWriteException()
     {

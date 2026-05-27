@@ -158,9 +158,9 @@ public class TransactionTests : IAsyncLifetime
         Assert.Null(await _repo.Get("tx-cancel"));
     }
 
-    // Companion to ReadWriteRepositoryTests.Add_SparseCompoundUniqueViolation:
-    // proves the duplicate-key exception is surfaced on the session-bound path as
-    // well, not just the sessionless overload.
+    // Session-bound counterpart to the sessionless sparse-compound regression:
+    // confirms the duplicate-key exception is surfaced when an
+    // IClientSessionHandle is supplied to Add().
     [Fact]
     public async Task Add_WithSession_SparseCompoundUniqueViolation_ThrowsMongoWriteException()
     {
@@ -195,11 +195,10 @@ public class TransactionTests : IAsyncLifetime
         Assert.Equal(ServerErrorCategory.DuplicateKey, ex.WriteError?.Category);
     }
 
-    // Re-review gap: prove DuplicateKey is surfaced inside an open Mongo
-    // transaction too, not only outside one. Sparse compound unique index is
-    // pre-seeded so the first insert sits in the collection; the second insert
-    // collides INSIDE the transaction and must throw, then the transaction is
-    // aborted so the test stays idempotent.
+    // Verifies the duplicate-key exception is surfaced from inside an open
+    // transaction. The first insert pre-seeds outside the transaction; the
+    // second insert collides INSIDE the transaction and must throw. The
+    // transaction is then aborted so the test stays idempotent.
     [Fact]
     public async Task Add_WithSession_InsideTransaction_SparseCompoundUniqueViolation_ThrowsMongoWriteException()
     {
