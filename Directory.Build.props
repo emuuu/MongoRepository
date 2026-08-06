@@ -1,16 +1,16 @@
 <Project>
   <PropertyGroup>
-    <MongoGenericRepositoryVersion>11.0.0</MongoGenericRepositoryVersion>
+    <MongoGenericRepositoryVersion>12.0.0</MongoGenericRepositoryVersion>
     <PackageReleaseNotes>
-    Multi-document transaction support — breaking signature change.
-
-    Added:
-    - StartSessionAsync, SupportsTransactionsAsync, ExecuteInTransactionAsync on IReadWriteRepository.
-    - Optional IClientSessionHandle parameter on all non-obsolete read and mutation methods.
-    - When a session is supplied to a read method, the read targets the read/write collection (sessions are client-bound; cross-client reads would throw).
+    Deserialization failures on key-based reads are no longer masked as "not found" — breaking behaviour change.
 
     Breaking:
-    - The optional IClientSessionHandle parameter is inserted before CancellationToken. Positional callers like repo.Get(id, ct) must switch to repo.Get(id, cancellationToken: ct). External implementers of IReadOnlyDataRepository / IReadWriteRepository must add the new parameters.
+    - Get(TKey) and Get(IEnumerable&lt;TKey&gt;) used to wrap the whole query, including document deserialization, in a catch for FormatException / ArgumentException. Any document that could not be mapped to the entity class — schema drift, where a stored field no longer matches the C# type — was silently reported as null / an empty list. Those exceptions now propagate. Calls that previously returned null may now throw.
+
+    Unchanged:
+    - A key that cannot be serialized into its stored representation (e.g. a string that is not a valid 24-digit ObjectId) still yields null / an empty list. This is now decided while the filter is rendered, before the query runs, instead of by catching the query's exception.
+
+    Consumers: any code that treated a null from Get(id) as "absent" now needs to handle a FormatException for corrupt or drifted documents. Tests that assert the old masking behaviour must be updated.
 
     See CHANGELOG.md for the full migration notes.
     </PackageReleaseNotes>

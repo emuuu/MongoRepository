@@ -29,3 +29,17 @@ public class OriginMarkerItemRepository : ReadWriteRepository<OriginMarkerItem, 
     {
     }
 }
+
+public class ObjectIdKeyedItemRepository : ReadWriteRepository<ObjectIdKeyedItem, string>
+{
+    public ObjectIdKeyedItemRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+    {
+    }
+}
+
+public class DriftItemRepository : ReadWriteRepository<DriftItem, string>
+{
+    public DriftItemRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+    {
+    }
+}

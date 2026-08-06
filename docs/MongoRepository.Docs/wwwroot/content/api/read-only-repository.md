@@ -29,6 +29,26 @@ var filter = Builders<Product>.Filter.Eq(p => p.Name, "Widget");
 var product = await repo.Get(filter);
 ```
 
+### Keys that cannot address a document
+
+If the key cannot be serialized into its stored representation — the common case
+being a string that is not a valid 24-digit ObjectId against a key declared as
+`[BsonRepresentation(BsonType.ObjectId)]` — `Get(TKey)` returns `null` and
+`Get(IEnumerable<TKey>)` returns an empty list. Such a key can never match a
+document, so this is treated as "not found" rather than an error. The check runs
+while the filter is rendered, before the query is sent.
+
+`Get(IEnumerable<TKey>)` rejects the whole query in that case, including the
+well-formed keys in the same call.
+
+### Documents that cannot be deserialized
+
+A document that is found but cannot be mapped onto the entity class — schema
+drift, where a persisted field no longer matches the C# property — raises a
+`FormatException`. Since 12.0.0 this is **not** reported as `null`: masking it
+made broken documents indistinguishable from absent ones. Handle it at the call
+site where a read has to stay non-fatal.
+
 ## GetAll Methods
 
 Retrieve multiple entities with optional filtering, sorting, and pagination:

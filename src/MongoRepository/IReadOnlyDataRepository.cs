@@ -20,8 +20,17 @@ namespace MongoRepository
         /// <param name="id">The unique identifier of the entity.</param>
         /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
-        /// <returns>The entity with the given ID, or null if not found.</returns>
+        /// <returns>
+        /// The entity with the given ID, or null if not found. Null is also returned when
+        /// <paramref name="id"/> cannot be serialised into the stored key representation
+        /// (e.g. a string that is not a valid 24-digit ObjectId) — such a key can never match a document.
+        /// </returns>
         /// <exception cref="MongoException">Thrown when the query fails.</exception>
+        /// <exception cref="FormatException">
+        /// Thrown when a matched document cannot be deserialised into <typeparamref name="TEntity"/>,
+        /// for example after schema drift where a stored field no longer matches the C# class.
+        /// Such documents are reported as an error, not silently as "not found".
+        /// </exception>
         Task<TEntity> Get(TKey id, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -30,7 +39,16 @@ namespace MongoRepository
         /// <param name="ids">The IDs of the entities to retrieve.</param>
         /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
-        /// <returns>A list of matching entities.</returns>
+        /// <returns>
+        /// A list of matching entities. An empty list is returned when any of the supplied
+        /// <paramref name="ids"/> cannot be serialised into the stored key representation;
+        /// the whole query is rejected in that case, including the well-formed keys.
+        /// </returns>
+        /// <exception cref="FormatException">
+        /// Thrown when a matched document cannot be deserialised into <typeparamref name="TEntity"/>,
+        /// for example after schema drift where a stored field no longer matches the C# class.
+        /// Such documents are reported as an error, not silently dropped from the result.
+        /// </exception>
         Task<List<TEntity>> Get(IEnumerable<TKey> ids, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -49,7 +67,7 @@ namespace MongoRepository
         /// <param name="filter">The LINQ filter expression.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>The first matching entity, or null if none found.</returns>
-        [Obsolete("Use Get(FilterDefinition) or the LINQ Where().FirstOrDefault() pattern instead. The TProperty parameter is unused. This method will be removed in v11.")]
+        [Obsolete("Use Get(FilterDefinition) or the LINQ Where().FirstOrDefault() pattern instead. The TProperty parameter is unused. This method will be removed in v13.")]
         Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -94,7 +112,7 @@ namespace MongoRepository
         /// <param name="pageSize">The number of items per page.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of filtered and optionally paged entities.</returns>
-        [Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v11.")]
+        [Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v13.")]
         Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -131,7 +149,7 @@ namespace MongoRepository
         /// <param name="pageSize">The page size.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A list of sorted entities.</returns>
-        [Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v11.")]
+        [Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v13.")]
         Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
         /// <summary>

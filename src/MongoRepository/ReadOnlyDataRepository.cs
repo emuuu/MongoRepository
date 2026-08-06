@@ -32,15 +32,24 @@ namespace MongoRepository
 		private IMongoCollection<TEntity> CollectionFor(IClientSessionHandle session)
 			=> session is null ? Collection : _context.Collection(false);
 
-
-		public virtual async Task<TEntity> Get(TKey id, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
+		/// <summary>
+		/// Renders a key-based filter to BSON before the query runs, so that a key
+		/// that cannot be serialised (e.g. a string that is not a valid 24-digit
+		/// ObjectId) is detected up front. Returns <c>null</c> in that case.
+		/// </summary>
+		/// <remarks>
+		/// Only the render step is guarded. Executing the query and deserialising
+		/// its documents stay outside the try/catch on purpose: a
+		/// <see cref="FormatException"/> raised while materialising a stored
+		/// document — schema drift, where a persisted field no longer matches the
+		/// C# class — must surface to the caller instead of being reported as
+		/// "not found".
+		/// </remarks>
+		private static FilterDefinition<TEntity> RenderKeyFilter(FilterDefinition<TEntity> filter, IMongoCollection<TEntity> collection)
 		{
 			try
 			{
-				var filter = Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id);
-				var collection = CollectionFor(session);
-				var cursor = session is null ? collection.Find(filter) : collection.Find(session, filter);
-				return await cursor.FirstOrDefaultAsync(cancellationToken);
+				return filter.Render(new RenderArgs<TEntity>(collection.DocumentSerializer, collection.Settings.SerializerRegistry));
 			}
 			catch (FormatException)
 			{
@@ -54,23 +63,26 @@ namespace MongoRepository
 			}
 		}
 
+		public virtual async Task<TEntity> Get(TKey id, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
+		{
+			var collection = CollectionFor(session);
+			var filter = RenderKeyFilter(Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), id), collection);
+			if (filter is null)
+				return null;
+
+			var cursor = session is null ? collection.Find(filter) : collection.Find(session, filter);
+			return await cursor.FirstOrDefaultAsync(cancellationToken);
+		}
+
 		public virtual async Task<List<TEntity>> Get(IEnumerable<TKey> ids, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
 		{
-			try
-			{
-				var filter = Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids);
-				var collection = CollectionFor(session);
-				var cursor = session is null ? collection.Find(filter) : collection.Find(session, filter);
-				return await cursor.ToListAsync(cancellationToken);
-			}
-			catch (FormatException)
-			{
+			var collection = CollectionFor(session);
+			var filter = RenderKeyFilter(Builders<TEntity>.Filter.In(nameof(IEntity<TKey>.Id), ids), collection);
+			if (filter is null)
 				return new List<TEntity>();
-			}
-			catch (ArgumentException)
-			{
-				return new List<TEntity>();
-			}
+
+			var cursor = session is null ? collection.Find(filter) : collection.Find(session, filter);
+			return await cursor.ToListAsync(cancellationToken);
 		}
 
 		public virtual Task<TEntity> Get(FilterDefinition<TEntity> filterDefinition = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
@@ -81,7 +93,7 @@ namespace MongoRepository
 				.FirstOrDefaultAsync(cancellationToken);
 		}
 
-		[Obsolete("Use Get(FilterDefinition) or the LINQ Where().FirstOrDefault() pattern instead. The TProperty parameter is unused. This method will be removed in v11.")]
+		[Obsolete("Use Get(FilterDefinition) or the LINQ Where().FirstOrDefault() pattern instead. The TProperty parameter is unused. This method will be removed in v13.")]
 		public virtual Task<TEntity> Get<TProperty>(Expression<Func<TEntity, bool>> filter, CancellationToken cancellationToken = default)
 		{
             return Collection
@@ -146,7 +158,7 @@ namespace MongoRepository
 			return GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize, session: session, cancellationToken: cancellationToken);
 		}
 
-		[Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v11.")]
+		[Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v13.")]
 		public virtual Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
 			if (page.HasValue && pageSize.HasValue)
@@ -239,7 +251,7 @@ namespace MongoRepository
 		}
 
 
-		[Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v11.")]
+		[Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v13.")]
 		public virtual Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
 			if (page.HasValue && pageSize.HasValue)

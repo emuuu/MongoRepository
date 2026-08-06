@@ -57,10 +57,12 @@ public class ReadOnlyDataRepositoryTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Get_ById_InvalidFormat_ReturnsNull()
+    public async Task Get_ById_EmptyKey_ReturnsNull()
     {
-        // When using ObjectId-based lookups, invalid formats would throw FormatException
-        // With string IDs, this just returns null for a non-existent key
+        // TestItem stores its key as a plain string, so an empty key is simply a
+        // key no document carries. Keys that cannot be serialised at all — and
+        // documents that cannot be deserialised — are covered in
+        // KeyFormatAndSchemaDriftTests.
         var result = await _readRepo.Get("");
 
         Assert.Null(result);

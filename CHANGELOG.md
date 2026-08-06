@@ -15,6 +15,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI/CD workflows
 - Health check add-on package (`MongoGenericRepository.HealthChecks`)
 
+### [12.0.0]
+
+#### Changed
+
+- **Breaking — `Get(TKey)` and `Get(IEnumerable<TKey>)` no longer swallow deserialization failures.** Both methods used to wrap the entire operation — filter construction, query execution *and* document deserialization — in a `catch (FormatException)` / `catch (ArgumentException)` that returned `null` / an empty list. The comment claimed the catch was there for an invalid `BsonId` format, but it also caught every `FormatException` raised while materialising a fetched document. The practical effect: after schema drift, where a stored field no longer matches the C# property (for example a `Value` persisted as a string against an `int` property), the affected documents were reported as "not found" and the actual cause never surfaced. Those exceptions now propagate to the caller.
+- The invalid-key behaviour is preserved, but is now decided before the query runs. The id filter is rendered to BSON up front; only that render step is guarded. A key that cannot be serialized into its stored representation — the canonical case being a string that is not a valid 24-digit ObjectId against a `[BsonRepresentation(BsonType.ObjectId)]` key — still yields `null` from `Get(TKey)` and an empty list from `Get(IEnumerable<TKey>)`, because such a key can never match a document. Executing the query and deserializing its results are outside the guard.
+- `Get(IEnumerable<TKey>)` continues to reject the whole query — returning an empty list — when *any* supplied key is unserializable, including the well-formed ones. This is unchanged from 11.x and is now stated explicitly in the XML docs rather than being an accident of the catch placement.
+- **Removal of the `[Obsolete]` LINQ-expression overloads is deferred to v13.** Their attribute messages still announced removal in v11 while 11.0.0 shipped with them in place; the 11.0.0 notes then named v12. Both are now corrected to v13, so the attribute text and the release plan agree. The overloads (`Get<TProperty>(Expression<bool>)`, `GetAll<TProperty>(Expression<bool>, ...)`, `GetAllDescending<TProperty>(Expression<bool>, ...)`) remain present and unchanged in 12.0.0. They still take no session parameter — migrate to the non-obsolete equivalents if you need them inside a transaction.
+
+#### Added
+
+- Tests covering the two paths separately: an unserializable key still returns `null` / an empty list, and a document that cannot be deserialized now throws instead of being reported as missing. The schema-drift fixture writes through the raw `BsonDocument` collection and asserts the document is genuinely present, so a passing test cannot be explained by a missing document.
+
+#### Migration
+
+- **`Get(id)` returning `null` no longer means "no such document, or something failed to deserialize".** It now means only "no such document, or a key that cannot address one". Callers that treated `null` as a benign absence must be prepared for a `FormatException` where a document exists but cannot be mapped. Where that has to stay non-fatal — a degraded list view, a background sweep — catch it at the call site, log it, and keep the exception visible instead of restoring the blanket catch.
+- **Expect previously invisible data problems to surface on upgrade.** Documents broken by earlier schema changes were being read as "not found"; after this release the same reads fail loudly. That is the point of the change, but it can turn a quiet collection into a noisy one at deploy time. Consider running a read sweep over the affected collections in a staging environment first.
+- **Consumers asserting the old behaviour must update their tests.** A test that seeds a document with a legacy field and asserts `Get` returns `null` was pinning the 11.x masking behaviour. That assertion inverts with this release — the call now throws — and has to be rewritten to expect the exception.
+- **No signature changes.** Unlike 11.0.0, this release does not alter any method signature; the break is purely behavioural, so the compiler will not point at the affected call sites.
+
 ### [11.0.0]
 
 #### Added
