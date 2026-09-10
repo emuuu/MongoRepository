@@ -1,18 +1,20 @@
 <Project>
   <PropertyGroup>
-    <MongoGenericRepositoryVersion>12.0.0</MongoGenericRepositoryVersion>
+    <MongoGenericRepositoryVersion>12.1.0</MongoGenericRepositoryVersion>
     <PackageReleaseNotes>
-    Deserialization failures on key-based reads are no longer masked as "not found" — breaking behaviour change.
+    Serialization conventions are now configurable instead of having to be attributed on every entity class.
 
-    Breaking:
-    - Get(TKey) and Get(IEnumerable&lt;TKey&gt;) used to wrap the whole query, including document deserialization, in a catch for FormatException / ArgumentException. Any document that could not be mapped to the entity class — schema drift, where a stored field no longer matches the C# type — was silently reported as null / an empty list. Those exceptions now propagate. Calls that previously returned null may now throw.
+    Added:
+    - MongoDbOptions.Serialization (MongoSerializationOptions) switches on the driver's IgnoreExtraElements and IgnoreIfNull conventions. The motivation is schema evolution: during a rolling update, instances running the newer schema write fields the older ones do not declare, which a strict driver turns into a FormatException. Both switches are independent bool? values and register nothing while unset, so an application that does not configure them keeps the behaviour of 12.0.0.
+    - Namespaces and TypeFilter, combined by AND, limit the conventions to part of the type graph. Namespaces match whole segments: "MyApp.Orders" covers "MyApp.Orders.Archive" but not "MyApp.OrdersArchive". TypeFilter can only be set from code, as the configuration binder skips delegate properties. A Namespaces list that holds nothing usable is rejected rather than quietly covering every type.
+    - MongoRepositoryConventions.Register applies the options explicitly and belongs at the start of application start-up; Unregister removes the pack again. Options are validated before the registry is touched, and ConventionPackName may not take over the driver's own pack names. Applications that never call Register get them from the first EntityContext constructed with options that ask for a convention.
 
-    Unchanged:
-    - A key that cannot be serialized into its stored representation (e.g. a string that is not a valid 24-digit ObjectId) still yields null / an empty list. This is now decided while the filter is rendered, before the query runs, instead of by catching the query's exception.
+    Worth knowing:
+    - Conventions only reach class maps the driver builds afterwards, and a class map is built once per type and per process.
+    - Attributes win over conventions: [BsonIgnoreExtraElements(false)] keeps an entity strict even while a tolerant convention is registered.
+    - IgnoreIfNull changes the stored document, not only the read path: a null property is absent instead of stored as null, which $exists filters and sparse or partial indexes react to.
 
-    Consumers: any code that treated a null from Get(id) as "absent" now needs to handle a FormatException for corrupt or drifted documents. Tests that assert the old masking behaviour must be updated.
-
-    See CHANGELOG.md for the full migration notes.
+    See CHANGELOG.md for the full notes.
     </PackageReleaseNotes>
     
     <!-- Gemeinsame Metadaten für alle Pakete -->

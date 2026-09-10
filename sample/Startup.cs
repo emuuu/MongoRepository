@@ -29,7 +29,15 @@ namespace Sample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.Configure<MongoDbOptions>(Configuration.GetSection("MongoDbOptions"));
+
+            var mongoDbSection = Configuration.GetSection("MongoDbOptions");
+            services.Configure<MongoDbOptions>(mongoDbSection);
+
+            // The serialization conventions have to reach the driver before the first
+            // repository call maps an entity class, so they are registered here rather
+            // than being left to the fallback in the EntityContext constructor.
+            MongoRepositoryConventions.Register(mongoDbSection.Get<MongoDbOptions>());
+
             services.AddScoped<IWeatherForecastRepository, WeatherForecastMongoDbRepository>();
 
             services

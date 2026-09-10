@@ -18,8 +18,21 @@ namespace MongoRepository
 
 		/// <summary>   Constructor. </summary>
 		/// <param name="mongoOptions">   The mongoDB connection options. </param>
+		/// <remarks>
+		/// Registers the configured serialization conventions unless something has already
+		/// registered them. See <see cref="MongoRepositoryConventions"/> for the explicit
+		/// route, which is the one to take when the first context is built late.
+		/// </remarks>
+		/// <exception cref="System.ArgumentException">
+		/// Thrown for serialization options the library rejects, which only happens while no
+		/// conventions have been registered yet. Options that ask for nothing are not an error.
+		/// </exception>
 		public EntityContext(IOptions<MongoDbOptions> mongoOptions)
 		{
+			// The registry has to hold the conventions before the driver builds a class map,
+			// which the first GetCollection for this entity triggers.
+			MongoRepositoryConventions.EnsureRegistered(mongoOptions.Value);
+
 			_entityTypeName = typeof(TEntity).Name;
 
 			var dbAttribute = (EntityDatabaseAttribute)Attribute.GetCustomAttribute(typeof(TEntity), typeof(EntityDatabaseAttribute));

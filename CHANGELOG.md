@@ -7,13 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## MongoGenericRepository / MongoGenericRepository.HealthChecks
 
-### [Unreleased]
+### [12.1.0]
 
 #### Added
 
 - Documentation site with API reference (Blazor WebAssembly + GitHub Pages)
 - GitHub Actions CI/CD workflows
 - Health check add-on package (`MongoGenericRepository.HealthChecks`)
+- **Opt-in serialization conventions.** `MongoDbOptions.Serialization`, a new `MongoSerializationOptions`, switches on the driver's `IgnoreExtraElements` and `IgnoreIfNull` conventions without putting `[BsonIgnoreExtraElements]` on every entity class and `[BsonIgnoreIfNull]` on every nullable property. The motivation is schema evolution: during a rolling update, instances running the newer schema write fields the older ones do not declare, and a strict driver turns those documents into `FormatException`s. Both switches are independent `bool?` values that register nothing while they are unset, so an application that does not configure them keeps the behaviour of 12.0.0 exactly.
+- **Scoping for the conventions.** `Namespaces` and `TypeFilter`, combined by AND, limit them to part of the type graph rather than the whole process. Namespaces match whole segments, so `MyApp.Orders` covers `MyApp.Orders.Archive` but not `MyApp.OrdersArchive`; `TypeFilter` can only be set from code, because the configuration binder skips delegate properties. Entries that are null, empty or whitespace are dropped; a `Namespaces` list that holds nothing usable is rejected with an `ArgumentException` instead of quietly widening the conventions to every type.
+- **`MongoRepositoryConventions`**, the registration entry point. `Register` applies the given options and belongs at the start of application start-up; `Unregister` removes the pack again, for tests and for hosts that reconfigure themselves. Options are validated before the registry is touched, so a rejected call leaves an existing registration intact, and `ConventionPackName` may not take over the driver's own pack names `__defaults__` and `__attributes__`. Applications that never call `Register` get them from the first `EntityContext` constructed with options that ask for a convention, as a fallback; a context whose switches are all unset leaves the state open for a later one.
+- **The limits of the conventions, each covered by a test.** They only reach class maps the driver builds after the registration, and a class map is built once per type and per process and never revisited — which is why the explicit call belongs before the first repository call. Attributes win over conventions: `[BsonIgnoreExtraElements(false)]` keeps an entity strict while a tolerant convention is registered, and `[BsonIgnoreExtraElements]` keeps it tolerant against a strict one, because the driver applies attribute conventions last. `IgnoreIfNull` changes the stored document rather than only the read path — a null property is absent instead of being stored as null, which `$exists` filters and sparse or partial indexes react to. The fallback registration happens once: later `MongoDbOptions` instances carrying different values do not change an existing registration.
+
+#### Changed
+
+- Tests run on Microsoft.Testing.Platform. A `global.json` at the repository root selects the runner, and the CI and release workflows now call `dotnet test --project <csproj>` from the repository root, because Microsoft.Testing.Platform, which `xunit.v3` brings in, refuses to run through the VSTest target on the .NET 10 SDK.
 
 ### [12.0.0]
 
