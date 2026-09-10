@@ -10,8 +10,8 @@ on:
         description: 'Path to the .csproj file'
         required: true
         type: string
-      test-directory:
-        description: 'Path to the test project directory'
+      test-project:
+        description: 'Path to the test .csproj file'
         required: true
         type: string
       title-prefix:
@@ -40,8 +40,7 @@ jobs:
             10.0.x
       - run: dotnet restore
       - run: dotnet build -c Release --no-restore
-      - run: dotnet test -c Release --no-build
-        working-directory: ${{ inputs.test-directory }}
+      - run: dotnet test --project ${{ inputs.test-project }} -c Release --no-build
       - name: Extract version from tag
         run: |
           if [[ ! "$GITHUB_REF_NAME" =~ ^${{ inputs.package }}/v ]]; then

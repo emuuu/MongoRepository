@@ -13,7 +13,7 @@ jobs:
     with:
       package: mongorepository
       csproj-path: src/MongoRepository/MongoRepository.csproj
-      test-directory: tests/MongoRepository.Tests
+      test-project: tests/MongoRepository.Tests/MongoRepository.Tests.csproj
       title-prefix: MongoGenericRepository
     secrets:
       nuget-api-key: ${{ secrets.NUGET_API_KEY }}
