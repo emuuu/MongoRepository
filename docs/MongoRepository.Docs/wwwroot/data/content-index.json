@@ -23,11 +23,13 @@
     "headings": [
       "Overview",
       "Get Methods",
+      "Keys that cannot address a document",
+      "Documents that cannot be deserialized",
       "GetAll Methods",
       "GetAllDescending",
       "Count"
     ],
-    "searchText": "Overview IReadOnlyDataRepository\u003CTEntity, TKey\u003E defines all read operations: Get, GetAll, GetAllDescending, and Count. Use this interface when your service only needs to read data. Get Methods Retrieve a single entity by ID, multiple IDs, filter expression, or filter definition: GetAll Methods Retrieve multiple entities with optional filtering, sorting, and pagination: GetAllDescending Same as GetAll but with descending sort order: Count Count entities matching a filter:"
+    "searchText": "Overview IReadOnlyDataRepository\u003CTEntity, TKey\u003E defines all read operations: Get, GetAll, GetAllDescending, and Count. Use this interface when your service only needs to read data. Get Methods Retrieve a single entity by ID, multiple IDs, filter expression, or filter definition: Keys that cannot address a document If the key cannot be serialized into its stored representation \u2014 the common case being a string that is not a valid 24-digit ObjectId against a key declared as [BsonRepresentation(Bson"
   },
   {
     "slug": "api/read-write-repository",

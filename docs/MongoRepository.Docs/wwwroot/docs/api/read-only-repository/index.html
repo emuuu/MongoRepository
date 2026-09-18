@@ -46,6 +46,21 @@ var product = await repo.Get(p =&gt; p.Name == &quot;Widget&quot;);
 var filter = Builders&lt;Product&gt;.Filter.Eq(p =&gt; p.Name, &quot;Widget&quot;);
 var product = await repo.Get(filter);
 </code></pre>
+<h3 id="keys-that-cannot-address-a-document">Keys that cannot address a document</h3>
+<p>If the key cannot be serialized into its stored representation — the common case
+being a string that is not a valid 24-digit ObjectId against a key declared as
+<code>[BsonRepresentation(BsonType.ObjectId)]</code> — <code>Get(TKey)</code> returns <code>null</code> and
+<code>Get(IEnumerable&lt;TKey&gt;)</code> returns an empty list. Such a key can never match a
+document, so this is treated as &quot;not found&quot; rather than an error. The check runs
+while the filter is rendered, before the query is sent.</p>
+<p><code>Get(IEnumerable&lt;TKey&gt;)</code> rejects the whole query in that case, including the
+well-formed keys in the same call.</p>
+<h3 id="documents-that-cannot-be-deserialized">Documents that cannot be deserialized</h3>
+<p>A document that is found but cannot be mapped onto the entity class — schema
+drift, where a persisted field no longer matches the C# property — raises a
+<code>FormatException</code>. Since 12.0.0 this is <strong>not</strong> reported as <code>null</code>: masking it
+made broken documents indistinguishable from absent ones. Handle it at the call
+site where a read has to stay non-fatal.</p>
 <h2 id="getall-methods">GetAll Methods</h2>
 <p>Retrieve multiple entities with optional filtering, sorting, and pagination:</p>
 <pre><code class="language-csharp">// All entities
