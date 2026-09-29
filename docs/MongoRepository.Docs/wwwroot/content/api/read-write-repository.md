@@ -57,7 +57,7 @@ var bulkResult = await repo.Update(updatedProducts);
 
 The key is stored exactly as passed, so the same value finds the document again through `Get`, `Update` and `Delete` — none of them trims either. A key with surrounding whitespace is a different key than its trimmed form; normalise it yourself before building it if that is what you want.
 
-The trim happens **in place**: the instance you pass in carries the trimmed values afterwards, also when the write fails or a transaction is rolled back.
+The trim happens **in place**: the instance you pass in carries the trimmed values afterwards, also when the write fails or a transaction is rolled back. `AddRange` and the bulk `Update` enumerate the sequence once, so a lazy projection is neither run twice nor replaced by untrimmed copies.
 
 ## Delete
 

@@ -101,3 +101,15 @@ public class NoTrimItem : IEntity<string>
     [NoTrim]
     public string? Signature { get; set; }
 }
+
+[EntityDatabase("TestDb")]
+[EntityCollection("StaticPropertyItems")]
+public class StaticPropertyItem : IEntity<string>
+{
+    public static string? Shared { get; set; }
+
+    [BsonId]
+    public string Id { get; set; } = null!;
+
+    public string? Name { get; set; }
+}

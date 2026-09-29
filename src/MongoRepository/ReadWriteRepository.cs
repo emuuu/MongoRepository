@@ -5,6 +5,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
@@ -49,7 +50,9 @@ namespace MongoRepository
             var serializer = BsonSerializer.LookupSerializer<TEntity>() as IBsonDocumentSerializer;
 
             var properties = new List<PropertyInfo>();
-            foreach (var property in typeof(TEntity).GetProperties())
+            // Instance properties only: a static property is not part of the document, and
+            // trimming it would change process-wide state on every write.
+            foreach (var property in typeof(TEntity).GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 var bsonIgnoreAttribute = (BsonIgnoreAttribute[])property.GetCustomAttributes(typeof(BsonIgnoreAttribute), false);
                 if (bsonIgnoreAttribute.Length > 0)
@@ -94,12 +97,15 @@ namespace MongoRepository
 
         public virtual Task AddRange(IEnumerable<TEntity> entities, InsertManyOptions options = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
         {
-            foreach (var entity in entities)
+            // Enumerated once: a lazy sequence would otherwise hand the driver fresh, untrimmed
+            // instances, or run the caller's projection a second time.
+            var items = entities.ToList();
+            foreach (var entity in items)
                 TrimStrings(entity);
 
             return session is null
-                ? Collection.InsertManyAsync(entities, options, cancellationToken)
-                : Collection.InsertManyAsync(session, entities, options, cancellationToken);
+                ? Collection.InsertManyAsync(items, options, cancellationToken)
+                : Collection.InsertManyAsync(session, items, options, cancellationToken);
         }
 
         public virtual Task<ReplaceOneResult> Update(TEntity entity, ReplaceOptions replaceOptions = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
@@ -114,12 +120,10 @@ namespace MongoRepository
 
         public virtual Task<BulkWriteResult<TEntity>> Update(IEnumerable<TEntity> entities, BulkWriteOptions bulkWriteOptions = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
         {
-            foreach (var entity in entities)
-                TrimStrings(entity);
-
             var updates = new List<WriteModel<TEntity>>();
             foreach (var entity in entities)
             {
+                TrimStrings(entity);
                 updates.Add(new ReplaceOneModel<TEntity>(Builders<TEntity>.Filter.Eq(nameof(IEntity<TKey>.Id), entity.Id), entity));
             }
             return session is null

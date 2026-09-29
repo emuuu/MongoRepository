@@ -46,6 +46,8 @@ namespace MongoRepository
         /// <remarks>
         /// Trims each entity in place, by the rules described for
         /// <see cref="Add(TEntity, InsertOneOptions, IClientSessionHandle, CancellationToken)"/>.
+        /// <paramref name="entities"/> is enumerated exactly once, so the driver receives the
+        /// trimmed instances even when the sequence is a lazy projection.
         /// </remarks>
         /// <param name="entities">The entities to insert.</param>
         /// <param name="options">Optional insert many options.</param>
@@ -79,6 +81,7 @@ namespace MongoRepository
         /// <remarks>
         /// Trims each entity in place and matches it by its untouched key, as described for
         /// <see cref="Update(TEntity, ReplaceOptions, IClientSessionHandle, CancellationToken)"/>.
+        /// <paramref name="entities"/> is enumerated exactly once.
         /// </remarks>
         /// <param name="entities">The entities to update.</param>
         /// <param name="bulkWriteOptions">Optional bulk write options.</param>

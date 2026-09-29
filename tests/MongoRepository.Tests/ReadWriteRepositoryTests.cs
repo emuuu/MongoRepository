@@ -226,6 +226,48 @@ public class ReadWriteRepositoryTests : IAsyncLifetime
         Assert.Equal("Beta", result.Name);
     }
 
+    [Fact]
+    public async Task Add_StaticStringProperty_IsNotTrimmed()
+    {
+        var repo = new StaticPropertyItemRepository(_fixture.CreateOptions());
+        await repo.Collection.Database.DropCollectionAsync("StaticPropertyItems");
+        StaticPropertyItem.Shared = "  shared  ";
+
+        await repo.Add(new StaticPropertyItem { Id = "1", Name = "  Alpha  " });
+
+        Assert.Equal("  shared  ", StaticPropertyItem.Shared);
+        Assert.Equal("Alpha", (await repo.Get("1"))!.Name);
+    }
+
+    // --- Each entity sequence is enumerated once ---
+
+    [Fact]
+    public async Task AddRange_LazySequence_InsertsTheTrimmedInstances()
+    {
+        var source = new[] { ("1", "  Alpha  "), ("2", "  Beta  ") };
+
+        await _repo.AddRange(source.Select(s => new TestItem { Id = s.Item1, Name = s.Item2 }));
+
+        var all = await _repo.GetAll();
+        Assert.Equal(new[] { "Alpha", "Beta" }, all.Select(x => x.Name));
+    }
+
+    [Fact]
+    public async Task Update_Bulk_LazySequence_IsEnumeratedOnce()
+    {
+        var items = new[]
+        {
+            new TestItem { Id = "1", Name = "Alpha", Value = 10 },
+            new TestItem { Id = "2", Name = "Beta", Value = 20 }
+        };
+        await _repo.AddRange(items);
+
+        await _repo.Update(items.Select(i => { i.Value *= 2; return i; }));
+
+        var all = await _repo.GetAll();
+        Assert.Equal(new[] { 20, 40 }, all.Select(x => x.Value));
+    }
+
     // Regression: Add() must surface MongoWriteException for sparse compound
     // unique index violations, not only for the default _id unique index.
     [Fact]

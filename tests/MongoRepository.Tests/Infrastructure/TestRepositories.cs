@@ -57,3 +57,10 @@ public class NoTrimItemRepository : ReadWriteRepository<NoTrimItem, string>
     {
     }
 }
+
+public class StaticPropertyItemRepository : ReadWriteRepository<StaticPropertyItem, string>
+{
+    public StaticPropertyItemRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+    {
+    }
+}
