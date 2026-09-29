@@ -1,18 +1,20 @@
 <Project>
   <PropertyGroup>
-    <MongoGenericRepositoryVersion>12.1.0</MongoGenericRepositoryVersion>
+    <MongoGenericRepositoryVersion>12.2.0</MongoGenericRepositoryVersion>
     <PackageReleaseNotes>
-    Serialization conventions are now configurable instead of having to be attributed on every entity class.
+    The entity's key is no longer trimmed on write.
+
+    Fixed:
+    - Add, AddRange and both Update overloads trimmed every string property, the Id included. A key with surrounding whitespace was stored under a trimmed key the caller did not hold, while Get, Delete and the id filters never trimmed. The Id and whichever member the serializer stores as _id are now written and matched exactly as passed.
+    - Update filtered on the trimmed key, so it missed a document stored under the untrimmed one and, with IsUpsert, created a second document. It now matches by the untouched key; the same applies to the bulk Update.
+    - AddRange and the bulk Update enumerate their sequence once. A lazy projection used to run twice: AddRange inserted untrimmed copies, and a mutating projection applied its change twice.
+    - Static string properties are no longer trimmed.
 
     Added:
-    - MongoDbOptions.Serialization (MongoSerializationOptions) switches on the driver's IgnoreExtraElements and IgnoreIfNull conventions. The motivation is schema evolution: during a rolling update, instances running the newer schema write fields the older ones do not declare, which a strict driver turns into a FormatException. Both switches are independent bool? values and register nothing while unset, so an application that does not configure them keeps the behaviour of 12.0.0.
-    - Namespaces and TypeFilter, combined by AND, limit the conventions to part of the type graph. Namespaces match whole segments: "MyApp.Orders" covers "MyApp.Orders.Archive" but not "MyApp.OrdersArchive". TypeFilter can only be set from code, as the configuration binder skips delegate properties. A Namespaces list that holds nothing usable is rejected rather than quietly covering every type.
-    - MongoRepositoryConventions.Register applies the options explicitly and belongs at the start of application start-up; Unregister removes the pack again. Options are validated before the registry is touched, and ConventionPackName may not take over the driver's own pack names. Applications that never call Register get them from the first EntityContext constructed with options that ask for a convention.
+    - [NoTrim] keeps a string property out of the trimming, for values whose whitespace carries meaning: natural keys outside the id, hashes, signatures.
 
-    Worth knowing:
-    - Conventions only reach class maps the driver builds afterwards, and a class map is built once per type and per process.
-    - Attributes win over conventions: [BsonIgnoreExtraElements(false)] keeps an entity strict even while a tolerant convention is registered.
-    - IgnoreIfNull changes the stored document, not only the read path: a null property is absent instead of stored as null, which $exists filters and sparse or partial indexes react to.
+    Behaviour change:
+    - Only keys with leading or trailing whitespace are affected. Documents written by earlier versions are stored under the trimmed key: an Update built from untrimmed input now misses them and, with IsUpsert, creates a second document. Normalise keys before building them if that is what you want.
 
     See CHANGELOG.md for the full notes.
     </PackageReleaseNotes>
