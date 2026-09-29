@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,20 +24,61 @@ namespace MongoRepository
         public override IMongoCollection<TEntity> Collection { get; }
 
 
-        private static TEntity TrimStrings(TEntity entity, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// The string properties <see cref="TrimStrings"/> works on. Resolved on first use rather
+        /// than in a static initializer: looking up the serializer builds the class map, and that
+        /// must not happen before the constructor has had the chance to register serialization
+        /// conventions. A failed resolution is not cached, so it surfaces again on the next write.
+        /// </summary>
+        private static readonly Lazy<PropertyInfo[]> _trimmableProperties =
+            new Lazy<PropertyInfo[]>(ResolveTrimmableProperties, LazyThreadSafetyMode.PublicationOnly);
+
+        /// <summary>
+        /// Selects the readable and writable string properties that are trimmed. Left out are
+        /// <c>[BsonIgnore]</c> and <c>[NoTrim]</c> properties and the key — both
+        /// <see cref="IEntity{TKey}.Id"/>, which every key-based filter of the repository
+        /// addresses, and whichever member is stored as <c>_id</c>, should that be a different
+        /// one. The key belongs to the caller: trimming it would store the document under a key
+        /// the caller does not know, and the id filter in <c>Update</c> would miss a document
+        /// whose key carries whitespace.
+        /// </summary>
+        private static PropertyInfo[] ResolveTrimmableProperties()
         {
+            // The serializer the collection uses as well; for a class map that is the one the
+            // first write would build anyway.
+            var serializer = BsonSerializer.LookupSerializer<TEntity>() as IBsonDocumentSerializer;
+
+            var properties = new List<PropertyInfo>();
             foreach (var property in typeof(TEntity).GetProperties())
             {
                 var bsonIgnoreAttribute = (BsonIgnoreAttribute[])property.GetCustomAttributes(typeof(BsonIgnoreAttribute), false);
                 if (bsonIgnoreAttribute.Length > 0)
                     continue;
 
+                if (Attribute.IsDefined(property, typeof(NoTrimAttribute)))
+                    continue;
+
+                if (property.Name == nameof(IEntity<TKey>.Id) || IsStoredAsId(serializer, property))
+                    continue;
+
                 if (property.CanRead && property.CanWrite && property.PropertyType == typeof(string))
-                {
-                    var value = (string)property.GetValue(entity);
-                    if (!string.IsNullOrWhiteSpace(value))
-                        property.SetValue(entity, value.Trim());
-                }
+                    properties.Add(property);
+            }
+            return properties.ToArray();
+        }
+
+        private static bool IsStoredAsId(IBsonDocumentSerializer serializer, PropertyInfo property)
+            => serializer != null
+                && serializer.TryGetMemberSerializationInfo(property.Name, out var info)
+                && info.ElementName == "_id";
+
+        private static TEntity TrimStrings(TEntity entity)
+        {
+            foreach (var property in _trimmableProperties.Value)
+            {
+                var value = (string)property.GetValue(entity);
+                if (!string.IsNullOrWhiteSpace(value))
+                    property.SetValue(entity, value.Trim());
             }
             return entity;
         }

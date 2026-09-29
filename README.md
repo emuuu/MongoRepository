@@ -171,6 +171,25 @@ public class ProductReader : ReadOnlyDataRepository<Product, string>, IProductRe
 
 All methods support `CancellationToken` and accept native MongoDB driver types (`FilterDefinition<T>`, `SortDefinition<T>`, etc.).
 
+### String trimming
+
+`Add`, `AddRange` and both `Update` overloads trim leading and trailing whitespace from the entity's string properties before writing. The key is never trimmed: `Id`, and whichever member is stored as `_id`, is stored exactly as passed, so the same value finds the document again through `Get`, `Update` and `Delete` — none of which trims either. Also left alone are properties marked `[BsonIgnore]` or `[NoTrim]`, null, empty and whitespace-only values, and strings inside nested objects or collections.
+
+```csharp
+public class Document : IEntity<string>
+{
+    [BsonId]
+    public string Id { get; set; }          // never trimmed
+
+    public string Title { get; set; }       // trimmed
+
+    [NoTrim]
+    public string Signature { get; set; }   // stored exactly as set
+}
+```
+
+The trim happens in place: the instance you pass in carries the trimmed values afterwards, also when the write fails or a transaction is rolled back.
+
 ## Health Checks
 
 ```csharp

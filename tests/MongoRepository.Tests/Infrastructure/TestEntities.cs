@@ -72,3 +72,32 @@ public class DriftItem : IEntity<string>
 
     public int Value { get; set; }
 }
+
+/// <summary>
+/// Entity whose stored key is not the <see cref="IEntity{TKey}.Id"/> property but
+/// a differently named member carrying <c>[BsonId]</c>.
+/// </summary>
+[EntityDatabase("TestDb")]
+[EntityCollection("AlternateKeyItems")]
+public class AlternateKeyItem : IEntity<string>
+{
+    [BsonId]
+    public string Key { get; set; } = null!;
+
+    public string Id { get; set; } = null!;
+
+    public string? Name { get; set; }
+}
+
+[EntityDatabase("TestDb")]
+[EntityCollection("NoTrimItems")]
+public class NoTrimItem : IEntity<string>
+{
+    [BsonId]
+    public string Id { get; set; } = null!;
+
+    public string? Name { get; set; }
+
+    [NoTrim]
+    public string? Signature { get; set; }
+}

@@ -43,3 +43,17 @@ public class DriftItemRepository : ReadWriteRepository<DriftItem, string>
     {
     }
 }
+
+public class AlternateKeyItemRepository : ReadWriteRepository<AlternateKeyItem, string>
+{
+    public AlternateKeyItemRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+    {
+    }
+}
+
+public class NoTrimItemRepository : ReadWriteRepository<NoTrimItem, string>
+{
+    public NoTrimItemRepository(IOptions<MongoDbOptions> mongoOptions) : base(mongoOptions)
+    {
+    }
+}

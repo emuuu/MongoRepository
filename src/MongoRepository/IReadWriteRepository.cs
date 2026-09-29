@@ -17,8 +17,20 @@ namespace MongoRepository
     {
         /// <summary>
         /// Inserts a single entity into the database.
-        /// All string properties are trimmed before insertion.
+        /// String properties are trimmed before insertion; the key is not.
         /// </summary>
+        /// <remarks>
+        /// <para>Trimming removes leading and trailing whitespace from every readable and writable
+        /// <see cref="string"/> property of the entity that is not the key and carries neither
+        /// <c>[BsonIgnore]</c> nor <see cref="NoTrimAttribute"/>. Null, empty and whitespace-only
+        /// values are left as they are, and only the entity's own properties are affected — strings
+        /// inside nested objects and collections are not trimmed.</para>
+        /// <para>The key — <see cref="IEntity{TKey}.Id"/> and whichever member is stored as
+        /// <c>_id</c> — is stored exactly as passed, so the same value finds the document again
+        /// through <c>Get</c>, <c>Update</c> and <c>Delete</c>, none of which trims either.</para>
+        /// <para>The entity is trimmed in place: the instance passed in carries the trimmed values
+        /// afterwards, also when the insert fails or the surrounding transaction is rolled back.</para>
+        /// </remarks>
         /// <param name="entity">The entity to insert.</param>
         /// <param name="options">Optional insert options.</param>
         /// <param name="session">Optional session for transactional writes.</param>
@@ -29,8 +41,12 @@ namespace MongoRepository
 
         /// <summary>
         /// Inserts multiple entities into the database.
-        /// All string properties are trimmed before insertion.
+        /// String properties are trimmed before insertion; the keys are not.
         /// </summary>
+        /// <remarks>
+        /// Trims each entity in place, by the rules described for
+        /// <see cref="Add(TEntity, InsertOneOptions, IClientSessionHandle, CancellationToken)"/>.
+        /// </remarks>
         /// <param name="entities">The entities to insert.</param>
         /// <param name="options">Optional insert many options.</param>
         /// <param name="session">Optional session for transactional writes.</param>
@@ -40,8 +56,15 @@ namespace MongoRepository
 
         /// <summary>
         /// Replaces an existing entity in the database by ID.
-        /// All string properties are trimmed before the replacement.
+        /// String properties are trimmed before the replacement; the key is not.
         /// </summary>
+        /// <remarks>
+        /// Trims the entity in place, by the rules described for
+        /// <see cref="Add(TEntity, InsertOneOptions, IClientSessionHandle, CancellationToken)"/>.
+        /// The document is matched by the untouched key, so a key that carries surrounding
+        /// whitespace still addresses the document stored under it — and an upsert does not
+        /// create a second document under a trimmed key.
+        /// </remarks>
         /// <param name="entity">The entity to update.</param>
         /// <param name="replaceOptions">Optional replace options.</param>
         /// <param name="session">Optional session for transactional writes.</param>
@@ -51,8 +74,12 @@ namespace MongoRepository
 
         /// <summary>
         /// Performs a bulk update of multiple entities.
-        /// All string properties are trimmed before the update.
+        /// String properties are trimmed before the update; the keys are not.
         /// </summary>
+        /// <remarks>
+        /// Trims each entity in place and matches it by its untouched key, as described for
+        /// <see cref="Update(TEntity, ReplaceOptions, IClientSessionHandle, CancellationToken)"/>.
+        /// </remarks>
         /// <param name="entities">The entities to update.</param>
         /// <param name="bulkWriteOptions">Optional bulk write options.</param>
         /// <param name="session">Optional session for transactional writes.</param>

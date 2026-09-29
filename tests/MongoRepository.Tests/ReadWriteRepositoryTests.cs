@@ -83,6 +83,149 @@ public class ReadWriteRepositoryTests : IAsyncLifetime
         await Assert.ThrowsAsync<MongoWriteException>(() => _repo.Add(duplicate));
     }
 
+    // --- The key is never trimmed ---
+
+    private IMongoCollection<BsonDocument> RawItems =>
+        _repo.Collection.Database.GetCollection<BsonDocument>("TestItems");
+
+    [Fact]
+    public async Task Add_IdWithSurroundingWhitespace_IsStoredVerbatim()
+    {
+        const string id = "  event-1: Main Street 1  ";
+        var item = new TestItem { Id = id, Name = "  Alpha  ", Value = 10 };
+
+        await _repo.Add(item);
+
+        Assert.Equal(id, item.Id);
+        var stored = await RawItems.Find(Builders<BsonDocument>.Filter.Eq("_id", id)).SingleOrDefaultAsync();
+        Assert.NotNull(stored);
+        var result = await _repo.Get(id);
+        Assert.NotNull(result);
+        Assert.Equal(id, result.Id);
+        // Everything but the key is still trimmed.
+        Assert.Equal("Alpha", result.Name);
+    }
+
+    // A natural key built from untrimmed input: the second Add of the same key
+    // fails with DuplicateKey, and the re-lookup with that very key has to find
+    // the document the first Add wrote.
+    [Fact]
+    public async Task Add_DuplicateIdWithSurroundingWhitespace_ThrowsAndGetFindsExisting()
+    {
+        const string id = " event-1: Main Street 1 ";
+        await _repo.Add(new TestItem { Id = id, Name = "First", Value = 1 });
+
+        var ex = await Assert.ThrowsAsync<MongoWriteException>(
+            () => _repo.Add(new TestItem { Id = id, Name = "Second", Value = 2 }));
+        Assert.Equal(ServerErrorCategory.DuplicateKey, ex.WriteError?.Category);
+
+        var existing = await _repo.Get(id);
+        Assert.NotNull(existing);
+        Assert.Equal("First", existing.Name);
+    }
+
+    [Fact]
+    public async Task Update_Single_IdWithSurroundingWhitespace_MatchesExistingDocument()
+    {
+        const string id = " key-1 ";
+        await RawItems.InsertOneAsync(new BsonDocument { { "_id", id }, { "Name", "Alpha" }, { "Value", 1 } });
+
+        var result = await _repo.Update(
+            new TestItem { Id = id, Name = "  Updated  ", Value = 2 },
+            new ReplaceOptions { IsUpsert = true });
+
+        Assert.Equal(1, result.MatchedCount);
+        Assert.Null(result.UpsertedId);
+        Assert.Equal(1, await RawItems.CountDocumentsAsync(Builders<BsonDocument>.Filter.Empty));
+        var fetched = await _repo.Get(id);
+        Assert.Equal("Updated", fetched!.Name);
+        Assert.Equal(2, fetched.Value);
+    }
+
+    [Fact]
+    public async Task AddRange_IdsWithSurroundingWhitespace_AreStoredVerbatim()
+    {
+        var items = new[]
+        {
+            new TestItem { Id = " a ", Name = "  Alpha  ", Value = 10 },
+            new TestItem { Id = "b  ", Name = "  Beta  ", Value = 20 }
+        };
+
+        await _repo.AddRange(items);
+
+        Assert.Equal(" a ", items[0].Id);
+        Assert.Equal("b  ", items[1].Id);
+        var found = await _repo.Get(new[] { " a ", "b  " });
+        Assert.Equal(2, found.Count);
+        Assert.All(found, item => Assert.DoesNotContain(" ", item.Name!));
+    }
+
+    [Fact]
+    public async Task Update_Bulk_IdsWithSurroundingWhitespace_MatchExistingDocuments()
+    {
+        await RawItems.InsertManyAsync(new[]
+        {
+            new BsonDocument { { "_id", " a " }, { "Name", "Alpha" }, { "Value", 1 } },
+            new BsonDocument { { "_id", "b  " }, { "Name", "Beta" }, { "Value", 2 } }
+        });
+
+        var result = await _repo.Update(new[]
+        {
+            new TestItem { Id = " a ", Name = "  X  ", Value = 10 },
+            new TestItem { Id = "b  ", Name = "  Y  ", Value = 20 }
+        });
+
+        Assert.Equal(2, result.MatchedCount);
+        Assert.Equal(2, await RawItems.CountDocumentsAsync(Builders<BsonDocument>.Filter.Empty));
+        Assert.Equal("X", (await _repo.Get(" a "))!.Name);
+        Assert.Equal("Y", (await _repo.Get("b  "))!.Name);
+    }
+
+    [Fact]
+    public async Task Add_BsonIdOnDifferentlyNamedMember_IsStoredVerbatim()
+    {
+        var repo = new AlternateKeyItemRepository(_fixture.CreateOptions());
+        await repo.Collection.Database.DropCollectionAsync("AlternateKeyItems");
+
+        await repo.Add(new AlternateKeyItem { Key = " k-1 ", Id = " k-1 ", Name = "  Alpha  " });
+
+        var stored = await repo.Collection.Database.GetCollection<BsonDocument>("AlternateKeyItems")
+            .Find(Builders<BsonDocument>.Filter.Empty).SingleAsync();
+        Assert.Equal(" k-1 ", stored["_id"].AsString);
+        Assert.Equal("Alpha", stored["Name"].AsString);
+    }
+
+    // --- [NoTrim] opts a property out ---
+
+    [Fact]
+    public async Task Add_NoTrimProperty_IsStoredVerbatim()
+    {
+        var repo = new NoTrimItemRepository(_fixture.CreateOptions());
+        await repo.Collection.Database.DropCollectionAsync("NoTrimItems");
+        var item = new NoTrimItem { Id = "1", Name = "  Alpha  ", Signature = "  sig  " };
+
+        await repo.Add(item);
+
+        Assert.Equal("  sig  ", item.Signature);
+        var result = await repo.Get("1");
+        Assert.Equal("  sig  ", result!.Signature);
+        Assert.Equal("Alpha", result.Name);
+    }
+
+    [Fact]
+    public async Task Update_Single_NoTrimProperty_IsStoredVerbatim()
+    {
+        var repo = new NoTrimItemRepository(_fixture.CreateOptions());
+        await repo.Collection.Database.DropCollectionAsync("NoTrimItems");
+        await repo.Add(new NoTrimItem { Id = "1", Name = "Alpha", Signature = "sig" });
+
+        await repo.Update(new NoTrimItem { Id = "1", Name = "  Beta  ", Signature = " sig2 " });
+
+        var result = await repo.Get("1");
+        Assert.Equal(" sig2 ", result!.Signature);
+        Assert.Equal("Beta", result.Name);
+    }
+
     // Regression: Add() must surface MongoWriteException for sparse compound
     // unique index violations, not only for the default _id unique index.
     [Fact]

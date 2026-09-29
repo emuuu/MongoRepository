@@ -48,6 +48,17 @@ var updatedProducts = products.Select(p => { p.Price *= 1.1m; return p; });
 var bulkResult = await repo.Update(updatedProducts);
 ```
 
+## String Trimming
+
+`Add`, `AddRange` and both `Update` overloads trim leading and trailing whitespace from the entity's string properties before writing. What is and is not trimmed:
+
+- **Trimmed:** every readable and writable `string` property of the entity itself.
+- **Not trimmed:** the key (`Id`, and whichever member is stored as `_id`), properties marked `[BsonIgnore]` or `[NoTrim]`, null, empty and whitespace-only values, and strings inside nested objects or collections.
+
+The key is stored exactly as passed, so the same value finds the document again through `Get`, `Update` and `Delete` — none of them trims either. A key with surrounding whitespace is a different key than its trimmed form; normalise it yourself before building it if that is what you want.
+
+The trim happens **in place**: the instance you pass in carries the trimmed values afterwards, also when the write fails or a transaction is rolled back.
+
 ## Delete
 
 Delete by ID, multiple IDs, filter expression, or filter definition:

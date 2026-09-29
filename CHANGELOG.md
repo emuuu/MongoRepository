@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## MongoGenericRepository / MongoGenericRepository.HealthChecks
 
+### [Unreleased]
+
+#### Fixed
+
+- **The key is no longer trimmed on write.** `Add`, `AddRange` and both `Update` overloads trimmed every string property of the entity, the `Id` included. The document was then stored under a key the caller did not hold: a key built from input with surrounding whitespace — a natural key such as `"{eventId}:{address}"` — was written trimmed, and a later `Get` with the key as built found nothing. The read side, `Get`, `Delete` and the id filters, never trimmed, so the two sides disagreed. That also broke the usual recovery from a duplicate insert: the second `Add` failed with `DuplicateKey`, and the re-lookup with the same key missed the document that caused it. `Id`, and whichever member the serializer stores as `_id` (for example a differently named `[BsonId]` property), are now written exactly as passed.
+- **`Update` matches a document whose key carries whitespace.** The entity was trimmed before the id filter was built, so `Update` filtered on the trimmed key: it missed a document stored under the untrimmed one — `MatchedCount` 0 — and with `IsUpsert` created a second document next to it. The filter now uses the untouched key. The same applies to every entity of the bulk `Update`.
+
+#### Added
+
+- **`[NoTrim]`** keeps a string property out of the trimming, for values whose surrounding whitespace carries meaning or has to round-trip unchanged: natural keys held outside the id, hashes, signatures, preformatted text.
+- The XML documentation of `Add`, `AddRange` and both `Update` overloads spells out what is trimmed, what is not, and that the trim happens in place on the instance passed in — also when the write fails or a transaction is rolled back.
+
+#### Changed
+
+- **Behaviour change for keys with surrounding whitespace.** Nothing changes for keys without leading or trailing whitespace, generated ids included. Where a key does carry whitespace, it is now stored and matched as passed instead of trimmed, and the `Id` of the instance passed in keeps its whitespace after the call instead of being trimmed in place. Code that relied on the old trim to normalise keys behaves differently:
+  - Documents written by earlier versions are stored under the trimmed key. An `Update` built from untrimmed input used to hit them and now misses them; with `IsUpsert` it creates a second document under the untrimmed key.
+  - An `Add` with an untrimmed key followed by a `Get` with the trimmed form — for example from a path that normalises its input — used to find the document and now does not.
+  - A key that is only valid once trimmed, such as an ObjectId string with surrounding whitespace against a `[BsonRepresentation(BsonType.ObjectId)]` key, now fails to serialise.
+
+  Normalise keys before building them if that is what you want. To find documents affected by the new behaviour, look for pairs of keys that differ only in surrounding whitespace, and for updates that report `MatchedCount` 0 where a document was expected.
+
 ### [12.1.0]
 
 #### Added
