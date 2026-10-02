@@ -1,20 +1,21 @@
 <Project>
   <PropertyGroup>
-    <MongoGenericRepositoryVersion>12.2.0</MongoGenericRepositoryVersion>
+    <MongoGenericRepositoryVersion>12.3.0</MongoGenericRepositoryVersion>
     <PackageReleaseNotes>
-    The entity's key is no longer trimmed on write.
+    A predicate passed to GetAll filters instead of becoming a sort key.
 
     Fixed:
-    - Add, AddRange and both Update overloads trimmed every string property, the Id included. A key with surrounding whitespace was stored under a trimmed key the caller did not hold, while Get, Delete and the id filters never trimmed. The Id and whichever member the serializer stores as _id are now written and matched exactly as passed.
-    - Update filtered on the trimmed key, so it missed a document stored under the untrimmed one and, with IsUpsert, created a second document. It now matches by the untouched key; the same applies to the bulk Update.
-    - AddRange and the bulk Update enumerate their sequence once. A lazy projection used to run twice: AddRange inserted untrimmed copies, and a mutating projection applied its change twice.
-    - Static string properties are no longer trimmed.
+    - GetAll(x => x.IsActive) bound to the sorting overload with TProperty = bool, because the type parameter of the filter overload cannot be inferred. It returned every document, sorted by the predicate, without a warning. A new non-generic GetAll(filter, page, pageSize, session) takes the predicate, so the same call now filters.
+    - GetAllDescending(x => x.IsActive) had the same trap. A descending order needs a sorting expression, so the call is now a compile error (CS0619) pointing to GetAllDescending(filter, sorting).
 
     Added:
-    - [NoTrim] keeps a string property out of the trimming, for values whose whitespace carries meaning: natural keys outside the id, hashes, signatures.
+    - GetAll(filter, page, pageSize, session, cancellationToken): LINQ predicate with optional paging, no sort, session-aware.
 
     Behaviour change:
-    - Only keys with leading or trailing whitespace are affected. Documents written by earlier versions are stored under the trimmed key: an Update built from untrimmed input now misses them and, with IsUpsert, creates a second document. Normalise keys before building them if that is what you want.
+    - Code that used a bool lambda to sort now gets only the matching documents. To keep the sort, name the argument: GetAll(sorting: x => x.IsActive) and GetAllDescending(sorting: x => x.IsActive). An explicit type argument alone is ambiguous with the obsolete generic filter overloads until v13.
+    - The binding is decided at compile time: code compiled against 12.2.0 or earlier, including libraries built on this package, keeps the old behaviour until it is recompiled.
+    - A derived repository that overrides the generic GetAll(sorting) to add its own logic should override the new GetAll(filter) as well.
+    - IReadOnlyDataRepository has two new members with default implementations; classes implementing the interface directly compile and load unchanged.
 
     See CHANGELOG.md for the full notes.
     </PackageReleaseNotes>

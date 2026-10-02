@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## MongoGenericRepository / MongoGenericRepository.HealthChecks
 
-### [Unreleased]
+### [12.3.0]
 
 #### Fixed
 
