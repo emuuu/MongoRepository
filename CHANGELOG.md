@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## MongoGenericRepository / MongoGenericRepository.HealthChecks
 
+### [Unreleased]
+
+#### Fixed
+
+- **A predicate passed to `GetAll` filters instead of becoming a sort key.** `GetAll(x => x.IsActive && x.DueAt != null)` never reached the filter overload: its type parameter `TProperty` is unused and cannot be inferred from a `Func<TEntity, bool>`, so the compiler discarded it and bound the call to `GetAll<TProperty>(sorting, …)` with `TProperty = bool`. The result was every document in the collection, sorted by the predicate — no filter, no warning, no error. The `[Obsolete]` on the filter overload could not warn either, because that overload was never selected. A new non-generic overload takes the predicate, and the compiler prefers it over the generic one, so the same call now filters. The binding is decided at compile time: code compiled against 12.2.0 or earlier keeps calling the sorting overload until it is recompiled against 12.3.0, and that includes libraries built on this package that the application does not compile itself.
+- **`GetAllDescending` with only a predicate is a compile error.** `GetAllDescending(x => x.IsActive)` had the same trap: it sorted every document by the predicate instead of filtering. A descending order needs a sorting expression, so the call now binds to a non-generic overload marked `[Obsolete(error: true)]` and the compiler reports CS0619 with a pointer to `GetAllDescending(filter, sorting)`.
+
+#### Added
+
+- **`GetAll(Expression<Func<TEntity, bool>> filter, int? page, int? pageSize, IClientSessionHandle session, CancellationToken)`.** Filters by a LINQ predicate with optional paging; `page` and `pageSize` below 1 default to 1, as in `GetAll(filter, sorting)`. No sort is applied, so pass a sorting expression for a stable order across pages. With a session, the read runs on the read/write collection like the other session overloads.
+- The XML documentation of the sorting overloads explains which overload a `bool` lambda binds to and how to sort by a boolean member.
+
+#### Changed
+
+- **Behaviour change for a `bool` lambda passed to `GetAll` or `GetAllDescending` without a type argument.** Code that used `GetAll(x => x.IsActive)` to sort by a boolean member now gets only the matching documents, unsorted, and `GetAllDescending(x => x.IsActive)` no longer compiles. To keep the sort, name the argument: `GetAll(sorting: x => x.IsActive)` and `GetAllDescending(sorting: x => x.IsActive)`, or use `GetAll(FilterDefinition<TEntity>.Empty, Builders<TEntity>.Sort.Ascending(x => x.IsActive))`. An explicit type argument alone, `GetAll<bool>(x => x.IsActive)`, does not help: it is ambiguous with the obsolete `GetAll<TProperty>(filter, …)` and `GetAllDescending<TProperty>(filter, …)` (CS0121), as it was before, until those are removed in v13.
+- **Repositories that override a read overload.** A derived repository that overrides `GetAll<TProperty>(sorting, …)` to add logic of its own — a tenant filter, logging — saw `GetAll(x => x.IsActive)` pass through that override. After recompiling, the call goes to the new `GetAll(filter, …)` instead; override it as well to keep the logic on that path.
+- The obsolete `GetAll<TProperty>(filter, …)` and `GetAllDescending<TProperty>(filter, …)` are unchanged and still removed in v13. As before, they are reachable only with an explicit type argument.
+- `IReadOnlyDataRepository<TEntity, TKey>` has two new members, both with a default implementation, so a class that implements the interface directly compiles and loads unchanged. The default `GetAll(filter, …)` delegates to the implementation's own `GetAll(FilterDefinition, …)` with a `null` sort definition, so the matches come back in whatever order that implementation applies by default; the default `GetAllDescending(filter, …)` throws `NotSupportedException`. `ReadOnlyDataRepository` and `ReadWriteRepository` implement both themselves.
+
 ### [12.2.0]
 
 #### Fixed

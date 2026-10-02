@@ -158,6 +158,36 @@ namespace MongoRepository
 			return GetAll(filterDefinition: filter, sortDefinition: sorting, page: page, pageSize: pageSize, session: session, cancellationToken: cancellationToken);
 		}
 
+		public virtual Task<List<TEntity>> GetAll(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
+		{
+			var collection = CollectionFor(session);
+			var queryable = session is null ? collection.AsQueryable() : collection.AsQueryable(session);
+
+			if (page.HasValue && pageSize.HasValue)
+			{
+				if (page < 1)
+				{
+					page = 1;
+				}
+				if (pageSize < 1)
+				{
+					pageSize = 1;
+				}
+
+				return queryable
+					.Where(filter)
+					.Skip((page.Value - 1) * pageSize.Value)
+					.Take(pageSize.Value)
+					.ToListAsync(cancellationToken);
+			}
+			else
+			{
+				return queryable
+					.Where(filter)
+					.ToListAsync(cancellationToken);
+			}
+		}
+
 		[Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v13.")]
 		public virtual Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)
 		{
@@ -250,6 +280,10 @@ namespace MongoRepository
 			}
 		}
 
+
+		[Obsolete("GetAllDescending cannot sort without a sorting expression; use GetAllDescending(filter, sorting) instead. To sort by a boolean member, name the argument: GetAllDescending(sorting: x => x.Flag).", error: true)]
+		public virtual Task<List<TEntity>> GetAllDescending(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
+			=> throw new NotSupportedException("GetAllDescending cannot sort without a sorting expression; use GetAllDescending(filter, sorting) instead.");
 
 		[Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v13.")]
 		public virtual Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default)

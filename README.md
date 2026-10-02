@@ -160,6 +160,8 @@ public class ProductReader : ReadOnlyDataRepository<Product, string>, IProductRe
 | `Get(ids)` | Get multiple entities by IDs |
 | `Get(filter)` | Get single entity by filter |
 | `GetAll()` | Get all entities (with optional filter, sort, pagination) |
+| `GetAll(predicate)` | Get all entities matching a LINQ predicate, e.g. `GetAll(x => x.IsActive)` (optional pagination, no sort) |
+| `GetAll(predicate, sorting)` / `GetAllDescending(predicate, sorting)` | Filter by a LINQ predicate and sort by an expression (optional pagination) |
 | `Count(filter)` | Count matching entities |
 | `Add(entity)` | Insert a single entity |
 | `AddRange(entities)` | Insert multiple entities |
@@ -170,6 +172,8 @@ public class ProductReader : ReadOnlyDataRepository<Product, string>, IProductRe
 | `Delete(filter)` | Delete by filter |
 
 All methods support `CancellationToken` and accept native MongoDB driver types (`FilterDefinition<T>`, `SortDefinition<T>`, etc.).
+
+> Up to 12.2.0, `GetAll(x => x.IsActive)` was bound to the sorting overload and returned every document, sorted by the predicate. Since 12.3.0 it filters once the calling code is recompiled; to sort by a boolean, write `GetAll(sorting: x => x.IsActive)`.
 
 ### String trimming
 

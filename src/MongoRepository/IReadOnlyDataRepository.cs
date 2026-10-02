@@ -104,6 +104,38 @@ namespace MongoRepository
         Task<List<TEntity>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Gets all entities matching a LINQ predicate with optional paging.
+        /// </summary>
+        /// <param name="filter">The LINQ filter expression.</param>
+        /// <param name="page">The page number (1-based).</param>
+        /// <param name="pageSize">The number of items per page.</param>
+        /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
+        /// <param name="cancellationToken">A cancellation token to observe.</param>
+        /// <returns>A list of filtered and optionally paged entities.</returns>
+        /// <remarks>
+        /// <para>
+        /// No sort is applied; the documents come back in the server's natural order. Use
+        /// <see cref="GetAll{TProperty}(Expression{Func{TEntity, bool}}, Expression{Func{TEntity, TProperty}}, int?, int?, IClientSessionHandle, CancellationToken)"/>
+        /// for a stable order, in particular when paging. Paging applies only when both
+        /// <paramref name="page"/> and <paramref name="pageSize"/> are given; values less than 1 default to 1.
+        /// </para>
+        /// <para>
+        /// A lambda returning <see cref="bool"/>, such as <c>GetAll(x =&gt; x.IsActive)</c>, binds to this
+        /// overload. Before 12.3.0 the same call bound to the sorting overload with <c>TProperty = bool</c>
+        /// and returned every document, sorted by the predicate.
+        /// </para>
+        /// <para>
+        /// The default implementation serves classes that implement this interface directly and were written
+        /// before the member existed. It delegates to
+        /// <see cref="GetAll(FilterDefinition{TEntity}, SortDefinition{TEntity}, int?, int?, IClientSessionHandle, CancellationToken)"/>
+        /// with a <c>null</c> sort definition, so the order is whatever that implementation applies by default.
+        /// <see cref="ReadOnlyDataRepository{TEntity, TKey}"/> implements the member itself and applies no sort.
+        /// </para>
+        /// </remarks>
+        Task<List<TEntity>> GetAll(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
+            => GetAll(filterDefinition: Builders<TEntity>.Filter.Where(filter), sortDefinition: null, page: page, pageSize: pageSize, session: session, cancellationToken: cancellationToken);
+
+        /// <summary>
         /// Gets all entities matching a LINQ filter with optional paging.
         /// </summary>
         /// <typeparam name="TProperty">An arbitrary property type (not used directly).</typeparam>
@@ -112,6 +144,11 @@ namespace MongoRepository
         /// <param name="pageSize">The number of items per page.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of filtered and optionally paged entities.</returns>
+        /// <remarks>
+        /// Reachable only with an explicit type argument: <typeparamref name="TProperty"/> cannot be inferred,
+        /// so a call without one binds to
+        /// <see cref="GetAll(Expression{Func{TEntity, bool}}, int?, int?, IClientSessionHandle, CancellationToken)"/>.
+        /// </remarks>
         [Obsolete("Use GetAll(FilterDefinition, SortDefinition, page, pageSize) instead. The TProperty parameter is unused. This method will be removed in v13.")]
         Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
@@ -125,6 +162,14 @@ namespace MongoRepository
         /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token to observe.</param>
         /// <returns>A list of sorted and optionally paged entities.</returns>
+        /// <remarks>
+        /// A lambda returning <see cref="bool"/> passed positionally does not bind here; it binds to the
+        /// predicate overload <see cref="GetAll(Expression{Func{TEntity, bool}}, int?, int?, IClientSessionHandle, CancellationToken)"/>
+        /// and filters. To sort by a boolean member, name the argument — <c>GetAll(sorting: x =&gt; x.IsActive)</c> —
+        /// or use <c>GetAll(FilterDefinition&lt;TEntity&gt;.Empty, Builders&lt;TEntity&gt;.Sort.Ascending(x =&gt; x.IsActive))</c>.
+        /// An explicit type argument alone, <c>GetAll&lt;bool&gt;(x =&gt; x.IsActive)</c>, does not compile until v13:
+        /// it is ambiguous with the obsolete <see cref="GetAll{TProperty}(Expression{Func{TEntity, bool}}, int?, int?, CancellationToken)"/>.
+        /// </remarks>
         Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
@@ -141,6 +186,28 @@ namespace MongoRepository
         Task<List<TEntity>> GetAll<TProperty>(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Not supported: a descending order needs a sorting expression. Use
+        /// <see cref="GetAllDescending{TProperty}(Expression{Func{TEntity, bool}}, Expression{Func{TEntity, TProperty}}, int?, int?, IClientSessionHandle, CancellationToken)"/>.
+        /// </summary>
+        /// <param name="filter">The filter expression.</param>
+        /// <param name="page">The page number.</param>
+        /// <param name="pageSize">The page size.</param>
+        /// <param name="session">Optional session for transactional reads.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>Never returns.</returns>
+        /// <remarks>
+        /// This overload exists so that a lambda returning <see cref="bool"/>, such as
+        /// <c>GetAllDescending(x =&gt; x.IsActive)</c>, binds here and the compiler reports an error. Before
+        /// 12.3.0 the same call bound to the sorting overload with <c>TProperty = bool</c> and returned every
+        /// document, sorted by the predicate. To sort by a boolean member, name the argument:
+        /// <c>GetAllDescending(sorting: x =&gt; x.IsActive)</c>.
+        /// </remarks>
+        /// <exception cref="NotSupportedException">Always.</exception>
+        [Obsolete("GetAllDescending cannot sort without a sorting expression; use GetAllDescending(filter, sorting) instead. To sort by a boolean member, name the argument: GetAllDescending(sorting: x => x.Flag).", error: true)]
+        Task<List<TEntity>> GetAllDescending(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default)
+            => throw new NotSupportedException("GetAllDescending cannot sort without a sorting expression; use GetAllDescending(filter, sorting) instead.");
+
+        /// <summary>
         /// Gets all entities matching the filter in descending order with optional paging.
         /// </summary>
         /// <typeparam name="TProperty">The property to sort by.</typeparam>
@@ -149,6 +216,10 @@ namespace MongoRepository
         /// <param name="pageSize">The page size.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A list of sorted entities.</returns>
+        /// <remarks>
+        /// Reachable only with an explicit type argument: <typeparamref name="TProperty"/> cannot be inferred,
+        /// so a call without one binds to the non-generic overload, which the compiler rejects.
+        /// </remarks>
         [Obsolete("This method cannot sort without a sorting expression. Use GetAllDescending(filter, sorting) instead. This method will be removed in v13.")]
         Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default);
 
@@ -162,6 +233,13 @@ namespace MongoRepository
         /// <param name="session">Optional session for transactional reads. When supplied, the read targets the read/write collection.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A list of sorted entities.</returns>
+        /// <remarks>
+        /// A lambda returning <see cref="bool"/> passed positionally does not bind here; it binds to an
+        /// overload the compiler rejects. To sort by a boolean member, name the argument:
+        /// <c>GetAllDescending(sorting: x =&gt; x.IsActive)</c>. An explicit type argument alone,
+        /// <c>GetAllDescending&lt;bool&gt;(x =&gt; x.IsActive)</c>, does not compile until v13: it is ambiguous with the
+        /// obsolete <see cref="GetAllDescending{TProperty}(Expression{Func{TEntity, bool}}, int?, int?, CancellationToken)"/>.
+        /// </remarks>
         Task<List<TEntity>> GetAllDescending<TProperty>(Expression<Func<TEntity, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null, CancellationToken cancellationToken = default);
 
         /// <summary>

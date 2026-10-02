@@ -3,6 +3,18 @@ using MongoRepository.Tests.Infrastructure;
 
 namespace MongoRepository.Tests;
 
+// GetAll(x => <predicate>) without type arguments must bind to the non-generic
+// predicate overload and filter. Before 12.3.0 it bound to the sorting overload
+// with TProperty = bool and returned every document, sorted by the predicate.
+//
+// GetAllDescending(x => <predicate>) without type arguments binds to a non-generic
+// overload marked [Obsolete(error: true)], so the mistake is a compile error
+// (CS0619). A compile error cannot be asserted from a test that has to compile;
+// GetAllDescending_PredicateOnly_IsObsoleteAsError only checks the attribute.
+// Sorting by a boolean stays possible with a named argument, GetAll(sorting: ...),
+// which the *_NamedBoolSorting_* tests cover. An explicit type argument alone,
+// GetAll<bool>(x => ...), is ambiguous (CS0121) with the obsolete generic filter
+// overloads until they are removed in v13; that was already the case before.
 [Collection("MongoDB")]
 public class ReadOnlyDataRepositoryTests : IAsyncLifetime
 {
@@ -290,6 +302,164 @@ public class ReadOnlyDataRepositoryTests : IAsyncLifetime
         Assert.Equal("Beta", result[0].Name);
         Assert.Equal("Charlie", result[1].Name);
     }
+
+    // --- GetAll with a predicate ---
+
+    [Fact]
+    public async Task GetAll_Predicate_WithoutTypeArguments_Filters()
+    {
+        await SeedItems(
+            CreateItem("1", "Alpha", 10),
+            CreateItem("2", "Beta", 20),
+            CreateItem("3", "Charlie", 30));
+
+        var result = await _readRepo.GetAll(x => x.Value >= 20 && x.Name != null);
+
+        Assert.Equal(2, result.Count);
+        Assert.All(result, item => Assert.True(item.Value >= 20));
+    }
+
+    [Fact]
+    public async Task GetAll_Predicate_WithPaging_PagesWithinMatches()
+    {
+        await SeedItems(
+            CreateItem("1", "Alpha", 10),
+            CreateItem("2", "Beta", 20),
+            CreateItem("3", "Charlie", 30));
+
+        // No sort is applied, so only the page sizes are deterministic, not which match lands on which page.
+        var page1 = await _readRepo.GetAll(x => x.Value >= 20, page: 1, pageSize: 1);
+        var page2 = await _readRepo.GetAll(x => x.Value >= 20, page: 2, pageSize: 1);
+        var page3 = await _readRepo.GetAll(x => x.Value >= 20, page: 3, pageSize: 1);
+        var wide = await _readRepo.GetAll(x => x.Value >= 20, page: 1, pageSize: 10);
+
+        Assert.True(Assert.Single(page1).Value >= 20);
+        Assert.True(Assert.Single(page2).Value >= 20);
+        Assert.Empty(page3);
+        Assert.Equal(new[] { "2", "3" }, wide.Select(x => x.Id).Order());
+    }
+
+    [Fact]
+    public async Task GetAll_Predicate_PageAndPageSizeLessThan1_ClampTo1()
+    {
+        await SeedItems(
+            CreateItem("1", "Alpha", 10),
+            CreateItem("2", "Beta", 20),
+            CreateItem("3", "Charlie", 30));
+
+        var result = await _readRepo.GetAll(x => x.Value >= 20, page: -5, pageSize: 0);
+
+        var item = Assert.Single(result);
+        Assert.True(item.Value >= 20);
+    }
+
+    [Fact]
+    public async Task GetAll_NamedBoolSorting_SortsAndReturnsAll()
+    {
+        await SeedItems(
+            CreateItem("1", "Charlie", 30),
+            CreateItem("2", "Alpha", 10),
+            CreateItem("3", "Beta", 20));
+
+        var result = await _readRepo.GetAll(sorting: x => x.Value >= 20);
+        var explicitResult = await _readRepo.GetAll<bool>(sorting: x => x.Value >= 20);
+
+        Assert.Equal(3, result.Count);
+        Assert.Equal("Alpha", result[0].Name);
+        Assert.All(result.Skip(1), item => Assert.True(item.Value >= 20));
+        // Two documents share the sort key true, so their relative order is not defined.
+        Assert.Equal(new[] { false, true, true }, explicitResult.Select(x => x.Value >= 20));
+        Assert.Equal(result.Select(x => x.Id).Order(), explicitResult.Select(x => x.Id).Order());
+    }
+
+    [Fact]
+    public async Task GetAllDescending_NamedBoolSorting_SortsAndReturnsAll()
+    {
+        await SeedItems(
+            CreateItem("1", "Alpha", 10),
+            CreateItem("2", "Charlie", 30),
+            CreateItem("3", "Beta", 20));
+
+        var result = await _readRepo.GetAllDescending(sorting: x => x.Value >= 20);
+
+        Assert.Equal(3, result.Count);
+        Assert.Equal("Alpha", result[2].Name);
+        Assert.All(result.Take(2), item => Assert.True(item.Value >= 20));
+    }
+
+    [Fact]
+    public async Task GetAll_PredicateAndSorting_WithoutTypeArguments_FiltersAndSorts()
+    {
+        await SeedItems(
+            CreateItem("1", "Charlie", 30),
+            CreateItem("2", "Alpha", 10),
+            CreateItem("3", "Beta", 20));
+
+        var ascending = await _readRepo.GetAll(x => x.Value >= 20, x => x.Name!);
+        var descending = await _readRepo.GetAllDescending(x => x.Value >= 20, x => x.Name!);
+
+        Assert.Equal(new[] { "Beta", "Charlie" }, ascending.Select(x => x.Name));
+        Assert.Equal(new[] { "Charlie", "Beta" }, descending.Select(x => x.Name));
+    }
+
+    [Fact]
+    public void GetAllDescending_PredicateOnly_IsObsoleteAsError()
+    {
+        var signature = new[] { typeof(System.Linq.Expressions.Expression<Func<TestItem, bool>>), typeof(int?), typeof(int?), typeof(IClientSessionHandle), typeof(CancellationToken) };
+
+        foreach (var type in new[] { typeof(IReadOnlyDataRepository<TestItem, string>), typeof(ReadOnlyDataRepository<TestItem, string>) })
+        {
+            var method = type.GetMethod(nameof(IReadOnlyDataRepository<TestItem, string>.GetAllDescending), signature);
+
+            Assert.NotNull(method);
+            Assert.False(method.IsGenericMethodDefinition);
+            var obsolete = Assert.Single(method.GetCustomAttributes(typeof(ObsoleteAttribute), inherit: false).Cast<ObsoleteAttribute>());
+            Assert.True(obsolete.IsError);
+        }
+    }
+
+    [Fact]
+    public async Task DirectImplementation_WithoutNewMembers_UsesDefaultImplementations()
+    {
+        await SeedItems(
+            CreateItem("3", "Charlie", 30),
+            CreateItem("1", "Alpha", 10),
+            CreateItem("2", "Beta", 20));
+        IReadOnlyDataRepository<TestItem, string> repo = new PreGetAllPredicateRepository(_readRepo);
+
+        var result = await repo.GetAll(x => x.Value >= 20);
+        var descending = typeof(IReadOnlyDataRepository<TestItem, string>).GetMethod(
+            nameof(IReadOnlyDataRepository<TestItem, string>.GetAllDescending),
+            new[] { typeof(System.Linq.Expressions.Expression<Func<TestItem, bool>>), typeof(int?), typeof(int?), typeof(IClientSessionHandle), typeof(CancellationToken) })!;
+
+        Assert.Equal(new[] { "2", "3" }, result.Select(x => x.Id).Order());
+        var invocation = Assert.Throws<System.Reflection.TargetInvocationException>(() =>
+            descending.Invoke(repo, new object?[] { (System.Linq.Expressions.Expression<Func<TestItem, bool>>)(x => x.Value >= 20), null, null, null, default(CancellationToken) }));
+        Assert.IsType<NotSupportedException>(invocation.InnerException);
+    }
+
+    // Implements the interface as it was before 12.3.0, without the predicate-only overloads.
+#pragma warning disable CS0618 // Obsolete members of the interface are part of that shape
+    private sealed class PreGetAllPredicateRepository(IReadOnlyDataRepository<TestItem, string> inner) : IReadOnlyDataRepository<TestItem, string>
+    {
+        public Task<TestItem> Get(string id, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.Get(id, session, cancellationToken);
+        public Task<List<TestItem>> Get(IEnumerable<string> ids, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.Get(ids, session, cancellationToken);
+        public Task<TestItem> Get(FilterDefinition<TestItem> filterDefinition = null!, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.Get(filterDefinition, session, cancellationToken);
+        public Task<TestItem> Get<TProperty>(System.Linq.Expressions.Expression<Func<TestItem, bool>> filter, CancellationToken cancellationToken = default) => inner.Get<TProperty>(filter, cancellationToken);
+        public Task<List<TestItem>> GetAll(IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.GetAll(session, cancellationToken);
+        public Task<List<TestItem>> GetAll(FilterDefinition<TestItem> filterDefinition, SortDefinition<TestItem> sortDefinition = null!, int? page = null, int? pageSize = null, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.GetAll(filterDefinition, sortDefinition, page, pageSize, session, cancellationToken);
+        public Task<List<TestItem>> GetAll(string jsonFilterDefinition, string jsonSortingDefinition = null!, int? page = null, int? pageSize = null, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.GetAll(jsonFilterDefinition, jsonSortingDefinition, page, pageSize, session, cancellationToken);
+        public Task<List<TestItem>> GetAll<TProperty>(System.Linq.Expressions.Expression<Func<TestItem, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default) => inner.GetAll<TProperty>(filter, page, pageSize, cancellationToken);
+        public Task<List<TestItem>> GetAll<TProperty>(System.Linq.Expressions.Expression<Func<TestItem, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.GetAll(sorting: sorting, page, pageSize, session, cancellationToken);
+        public Task<List<TestItem>> GetAll<TProperty>(System.Linq.Expressions.Expression<Func<TestItem, bool>> filter, System.Linq.Expressions.Expression<Func<TestItem, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.GetAll(filter, sorting, page, pageSize, session, cancellationToken);
+        public Task<List<TestItem>> GetAllDescending<TProperty>(System.Linq.Expressions.Expression<Func<TestItem, bool>> filter, int? page = null, int? pageSize = null, CancellationToken cancellationToken = default) => inner.GetAllDescending<TProperty>(filter, page, pageSize, cancellationToken);
+        public Task<List<TestItem>> GetAllDescending<TProperty>(System.Linq.Expressions.Expression<Func<TestItem, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.GetAllDescending(sorting: sorting, page, pageSize, session, cancellationToken);
+        public Task<List<TestItem>> GetAllDescending<TProperty>(System.Linq.Expressions.Expression<Func<TestItem, bool>> filter, System.Linq.Expressions.Expression<Func<TestItem, TProperty>> sorting, int? page = null, int? pageSize = null, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.GetAllDescending(filter, sorting, page, pageSize, session, cancellationToken);
+        public Task<long> Count(FilterDefinition<TestItem> filterDefinition = null!, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.Count(filterDefinition, session, cancellationToken);
+        public Task<long> Count(string jsonFilterDefinition, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.Count(jsonFilterDefinition, session, cancellationToken);
+        public Task<long> Count(System.Linq.Expressions.Expression<Func<TestItem, bool>> filter, IClientSessionHandle session = null!, CancellationToken cancellationToken = default) => inner.Count(filter, session, cancellationToken);
+    }
+#pragma warning restore CS0618
 
     // --- GetAllDescending with sorting ---
 

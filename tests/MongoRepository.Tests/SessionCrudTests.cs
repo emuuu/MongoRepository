@@ -329,6 +329,32 @@ public class SessionCrudTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetAll_LinqPredicate_WithSession_SeesUncommittedInserts()
+    {
+        using var session = await _repo.StartSessionAsync();
+        session.StartTransaction();
+
+        await _repo.AddRange(new[]
+        {
+            new TestItem { Id = "lp1", Name = "Match", Value = 1 },
+            new TestItem { Id = "lp2", Name = "Skip", Value = 2 },
+            new TestItem { Id = "lp3", Name = "Match", Value = 3 }
+        }, session: session);
+
+        var insideTx = await _repo.GetAll(x => x.Name == "Match", session: session);
+        Assert.Equal(2, insideTx.Count);
+        Assert.All(insideTx, item => Assert.Equal("Match", item.Name));
+
+        var pagedInsideTx = await _repo.GetAll(x => x.Name == "Match", page: 2, pageSize: 1, session: session);
+        Assert.Equal("Match", Assert.Single(pagedInsideTx).Name);
+
+        var outsideTx = await _repo.GetAll(x => x.Name == "Match");
+        Assert.Empty(outsideTx);
+
+        await session.AbortTransactionAsync();
+    }
+
+    [Fact]
     public async Task GetAllDescending_LinqSort_WithSession_SeesUncommittedInserts()
     {
         using var session = await _repo.StartSessionAsync();

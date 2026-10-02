@@ -57,18 +57,21 @@ Retrieve multiple entities with optional filtering, sorting, and pagination:
 // All entities
 var all = await repo.GetAll();
 
-// With LINQ filter + pagination
+// With LINQ filter + pagination (no sort applied)
 var page = await repo.GetAll(
     p => p.Price > 10,
     page: 1,
     pageSize: 20);
 
-// With sorting expression
+// With LINQ filter + sorting expression
 var sorted = await repo.GetAll(
     p => p.Price > 10,
     p => p.Name,
     page: 1,
     pageSize: 20);
+
+// Sorted by a boolean member: name the argument
+var activeLast = await repo.GetAll(sorting: p => p.IsActive);
 
 // With MongoDB filter + sort definitions
 var filter = Builders<Product>.Filter.Gt(p => p.Price, 10);
@@ -83,6 +86,8 @@ var result = await repo.GetAll(
     pageSize: 20);
 ```
 
+A single lambda that returns `bool` is a filter. Up to 12.2.0, `GetAll(p => p.Price > 10)` bound to the sorting overload instead and returned every document, sorted by the predicate. The binding is fixed at compile time, so code compiled against 12.2.0 or earlier keeps that behaviour until it is recompiled against 12.3.0. To sort by a boolean, pass the expression as `sorting:`; `GetAll<bool>(p => p.IsActive)` is ambiguous until the obsolete generic filter overload is removed in v13.
+
 ## GetAllDescending
 
 Same as `GetAll` but with descending sort order:
@@ -93,6 +98,8 @@ var newest = await repo.GetAllDescending(
     page: 1,
     pageSize: 10);
 ```
+
+`GetAllDescending` always needs a sorting expression. Since 12.3.0, a call with only a predicate, `GetAllDescending(p => p.IsActive)`, is a compile error; code compiled against an earlier version keeps sorting by the predicate until it is recompiled. Instead, use `GetAllDescending(filter, sorting)`, or `GetAllDescending(sorting: p => p.IsActive)` to sort by the boolean itself.
 
 ## Count
 
