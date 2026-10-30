@@ -57,6 +57,14 @@ var result = await repo.Update(product);
 var updatedProducts = products.Select(p =&gt; { p.Price *= 1.1m; return p; });
 var bulkResult = await repo.Update(updatedProducts);
 </code></pre>
+<h2 id="string-trimming">String Trimming</h2>
+<p><code>Add</code>, <code>AddRange</code> and both <code>Update</code> overloads trim leading and trailing whitespace from the entity's string properties before writing. What is and is not trimmed:</p>
+<ul>
+<li><strong>Trimmed:</strong> every readable and writable <code>string</code> property of the entity itself.</li>
+<li><strong>Not trimmed:</strong> the key (<code>Id</code>, and whichever member is stored as <code>_id</code>), properties marked <code>[BsonIgnore]</code> or <code>[NoTrim]</code>, null, empty and whitespace-only values, and strings inside nested objects or collections.</li>
+</ul>
+<p>The key is stored exactly as passed, so the same value finds the document again through <code>Get</code>, <code>Update</code> and <code>Delete</code> — none of them trims either. A key with surrounding whitespace is a different key than its trimmed form; normalise it yourself before building it if that is what you want.</p>
+<p>The trim happens <strong>in place</strong>: the instance you pass in carries the trimmed values afterwards, also when the write fails or a transaction is rolled back. <code>AddRange</code> and the bulk <code>Update</code> enumerate the sequence once, so a lazy projection is neither run twice nor replaced by untrimmed copies.</p>
 <h2 id="delete">Delete</h2>
 <p>Delete by ID, multiple IDs, filter expression, or filter definition:</p>
 <pre><code class="language-csharp">// By ID

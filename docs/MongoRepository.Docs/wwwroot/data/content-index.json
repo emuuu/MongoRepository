@@ -43,9 +43,10 @@
       "Add",
       "AddRange",
       "Update",
+      "String Trimming",
       "Delete"
     ],
-    "searchText": "Overview IReadWriteRepository\u003CTEntity, TKey\u003E extends IReadOnlyDataRepository with write operations: Add, AddRange, Update, and Delete. This is the interface you\u0027ll use most often. Add Insert a single entity: AddRange Insert multiple entities in a single batch operation: Update Replace a single entity or bulk-update multiple entities: Delete Delete by ID, multiple IDs, filter expression, or filter definition:"
+    "searchText": "Overview IReadWriteRepository\u003CTEntity, TKey\u003E extends IReadOnlyDataRepository with write operations: Add, AddRange, Update, and Delete. This is the interface you\u0027ll use most often. Add Insert a single entity: AddRange Insert multiple entities in a single batch operation: Update Replace a single entity or bulk-update multiple entities: String Trimming Add, AddRange and both Update overloads trim leading and trailing whitespace from the entity\u0027s string properties before writing. What is and is not "
   },
   {
     "slug": "api/entity-context",
@@ -98,9 +99,23 @@
     "headings": [
       "Overview",
       "Properties",
-      "Configuration"
+      "Configuration",
+      "Serialization Conventions"
     ],
-    "searchText": "Overview MongoDbOptions configures the MongoDB connection strings used by EntityContext. It supports separate read-write and read-only connections for replica set deployments. Properties | Property | Type | Description | |----------|------|-------------| | ReadWriteConnection | string | Connection string for read and write operations | | ReadOnlyConnection | string | Connection string for read-only operations (optional) | Configuration If ReadOnlyConnection is not set, read operations fall back "
+    "searchText": "Overview MongoDbOptions configures the MongoDB connection strings used by EntityContext. It supports separate read-write and read-only connections for replica set deployments. Properties | Property | Type | Description | |----------|------|-------------| | ReadWriteConnection | string | Connection string for read and write operations | | ReadOnlyConnection | string | Connection string for read-only operations (optional) | | Serialization | MongoSerializationOptions | Serialization conventions to"
+  },
+  {
+    "slug": "api/no-trim-attribute",
+    "title": "NoTrimAttribute",
+    "category": "API Reference",
+    "order": 8,
+    "description": "Attribute that keeps a string property out of the trimming applied on write.",
+    "apiRef": "NoTrimAttribute",
+    "headings": [
+      "Overview",
+      "Usage"
+    ],
+    "searchText": "Overview ReadWriteRepository trims leading and trailing whitespace from an entity\u0027s string properties before Add, AddRange and Update. [NoTrim] keeps a property out of that \u2014 for values whose whitespace carries meaning or has to round-trip unchanged, such as natural keys held outside the id, hashes, signatures or preformatted text. The entity\u0027s key never needs it: Id, and whichever member is stored as _id, is not trimmed in the first place. Usage"
   },
   {
     "slug": "getting-started/installation",
@@ -142,9 +157,10 @@
       "MongoDbOptions",
       "Basic Setup",
       "Read/Write Separation",
+      "Serialization Conventions",
       "EntityContext"
     ],
-    "searchText": "MongoDbOptions MongoRepository uses the MongoDbOptions class to configure database connections. It supports separate read-write and read-only connection strings for replica set scenarios. Basic Setup Read/Write Separation For replica set deployments, you can configure separate connections: The ReadOnlyDataRepository will use the read-only connection when available, falling back to the read-write connection. EntityContext The EntityContext manages MongoDB client instances and provides access to c"
+    "searchText": "MongoDbOptions MongoRepository uses the MongoDbOptions class to configure database connections. It supports separate read-write and read-only connection strings for replica set scenarios. Basic Setup Read/Write Separation For replica set deployments, you can configure separate connections: The ReadOnlyDataRepository will use the read-only connection when available, falling back to the read-write connection. Serialization Conventions The driver is strict when it deserializes: a document that carr"
   },
   {
     "slug": "guides/custom-repositories",

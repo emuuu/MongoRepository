@@ -51,6 +51,11 @@
 <td><code>string</code></td>
 <td>Connection string for read-only operations (optional)</td>
 </tr>
+<tr>
+<td><code>Serialization</code></td>
+<td><code>MongoSerializationOptions</code></td>
+<td>Serialization conventions to register with the driver (initialised, everything off by default)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="configuration">Configuration</h2>
@@ -65,6 +70,62 @@
     builder.Configuration.GetSection(&quot;MongoDb&quot;));
 </code></pre>
 <p>If <code>ReadOnlyConnection</code> is not set, read operations fall back to the <code>ReadWriteConnection</code>.</p>
+<h2 id="serialization-conventions">Serialization Conventions</h2>
+<p><code>Serialization</code> selects the driver conventions the library registers. Every switch is off by default, so a configuration that leaves the section out behaves exactly as before.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IgnoreExtraElements</code></td>
+<td><code>bool?</code></td>
+<td><code>true</code> reads documents carrying fields the entity class does not declare, <code>false</code> registers strict behaviour explicitly, <code>null</code> registers nothing</td>
+</tr>
+<tr>
+<td><code>IgnoreIfNull</code></td>
+<td><code>bool?</code></td>
+<td><code>true</code> leaves null properties out of the stored document, <code>false</code> stores them as BSON null, <code>null</code> registers nothing</td>
+</tr>
+<tr>
+<td><code>Namespaces</code></td>
+<td><code>IList&lt;string&gt;</code></td>
+<td>Limits both switches to the listed namespaces; empty covers every type</td>
+</tr>
+<tr>
+<td><code>TypeFilter</code></td>
+<td><code>Func&lt;Type, bool&gt;</code></td>
+<td>Narrows the scope further, combined with <code>Namespaces</code> by AND; can only be set from code</td>
+</tr>
+<tr>
+<td><code>ConventionPackName</code></td>
+<td><code>string</code></td>
+<td>The name the pack is registered under, <code>MongoGenericRepository</code> by default. The driver's own names, <code>__defaults__</code> and <code>__attributes__</code>, are rejected. Pick a name nothing else registers under — the driver keeps every pack sharing a name and deletes them together</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-json">{
+  &quot;MongoDb&quot;: {
+    &quot;ReadWriteConnection&quot;: &quot;mongodb://localhost:27017/MyDatabase&quot;,
+    &quot;Serialization&quot;: {
+      &quot;IgnoreExtraElements&quot;: true,
+      &quot;IgnoreIfNull&quot;: false,
+      &quot;Namespaces&quot;: [ &quot;MyApp.Domain&quot; ]
+    }
+  }
+}
+</code></pre>
+<p>Because the two switches are independent, all four cases are available: both on, only one of them, neither — omit the section — or either of them limited to part of the type graph.</p>
+<pre><code class="language-csharp">var mongoDbSection = builder.Configuration.GetSection(&quot;MongoDb&quot;);
+builder.Services.Configure&lt;MongoDbOptions&gt;(mongoDbSection);
+
+MongoRepositoryConventions.Register(mongoDbSection.Get&lt;MongoDbOptions&gt;());
+</code></pre>
+<p><code>Namespaces</code> matches whole segments: <code>MyApp.Orders</code> covers <code>MyApp.Orders.Archive</code>, but not <code>MyApp.OrdersArchive</code>. Types without a namespace only match while the list is empty. Entries that are null, empty or whitespace are dropped, and a list that holds nothing usable is rejected with an <code>ArgumentException</code> rather than quietly covering every type.</p>
 
         </article>
     </div>

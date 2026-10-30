@@ -52,6 +52,34 @@ builder.Services.AddSingleton&lt;EntityContext&gt;();
 }
 </code></pre>
 <p>The <code>ReadOnlyDataRepository</code> will use the read-only connection when available, falling back to the read-write connection.</p>
+<h2 id="serialization-conventions">Serialization Conventions</h2>
+<p>The driver is strict when it deserializes: a document that carries a field the entity class does not declare fails with a <code>FormatException</code>. During a rolling update that is business as usual, because instances running the newer schema already write fields the older ones do not know. <code>MongoDbOptions.Serialization</code> configures the driver conventions that relax this, instead of putting <code>[BsonIgnoreExtraElements]</code> on every entity class and <code>[BsonIgnoreIfNull]</code> on every nullable property.</p>
+<pre><code class="language-json">{
+  &quot;MongoDb&quot;: {
+    &quot;ReadWriteConnection&quot;: &quot;mongodb://localhost:27017/MyDatabase&quot;,
+    &quot;Serialization&quot;: {
+      &quot;IgnoreExtraElements&quot;: true,
+      &quot;IgnoreIfNull&quot;: false,
+      &quot;Namespaces&quot;: [ &quot;MyApp.Domain&quot; ]
+    }
+  }
+}
+</code></pre>
+<p>Both switches are independent and off by default, which covers all four cases: both on, only one of them, neither — omit the section and nothing is registered — or either of them limited to the namespaces you list. <code>TypeFilter</code> narrows the scope further and can only be set from code, as the configuration binder skips delegate properties; it is combined with <code>Namespaces</code> by AND.</p>
+<p>Register the conventions before the first repository call:</p>
+<pre><code class="language-csharp">var mongoDbSection = builder.Configuration.GetSection(&quot;MongoDb&quot;);
+builder.Services.Configure&lt;MongoDbOptions&gt;(mongoDbSection);
+
+MongoRepositoryConventions.Register(mongoDbSection.Get&lt;MongoDbOptions&gt;());
+</code></pre>
+<p>What to expect:</p>
+<ul>
+<li>Only class maps built after the call are affected. The driver maps an entity class once per process, on first use, and never revisits it — a repository call that runs earlier leaves that entity strict for the rest of the process.</li>
+<li>Attributes win over conventions. <code>[BsonIgnoreExtraElements(false)]</code> keeps an entity strict while a tolerant convention is registered, and <code>[BsonIgnoreExtraElements]</code> keeps it tolerant against a strict one.</li>
+<li><code>IgnoreIfNull</code> changes what is stored, not only how it is read: a null property is absent from the document instead of stored as null, which <code>$exists</code> filters and sparse or partial indexes react to.</li>
+<li>Registration happens once, process-wide. An application that never calls <code>Register</code> gets them from the first <code>EntityContext</code> constructed with options that ask for a convention; a context whose switches are all unset leaves the state open for a later one, and once something is registered, later <code>MongoDbOptions</code> instances carrying different values do not change it.</li>
+<li>Namespaces match whole segments: <code>MyApp.Orders</code> covers <code>MyApp.Orders.Archive</code>, but not <code>MyApp.OrdersArchive</code>.</li>
+</ul>
 <h2 id="entitycontext">EntityContext</h2>
 <p>The <code>EntityContext</code> manages MongoDB client instances and provides access to collections. It caches <code>MongoClient</code> instances per connection string to avoid connection pool waste.</p>
 <pre><code class="language-csharp">// EntityContext is typically injected via DI

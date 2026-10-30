@@ -66,18 +66,21 @@ site where a read has to stay non-fatal.</p>
 <pre><code class="language-csharp">// All entities
 var all = await repo.GetAll();
 
-// With LINQ filter + pagination
+// With LINQ filter + pagination (no sort applied)
 var page = await repo.GetAll(
     p =&gt; p.Price &gt; 10,
     page: 1,
     pageSize: 20);
 
-// With sorting expression
+// With LINQ filter + sorting expression
 var sorted = await repo.GetAll(
     p =&gt; p.Price &gt; 10,
     p =&gt; p.Name,
     page: 1,
     pageSize: 20);
+
+// Sorted by a boolean member: name the argument
+var activeLast = await repo.GetAll(sorting: p =&gt; p.IsActive);
 
 // With MongoDB filter + sort definitions
 var filter = Builders&lt;Product&gt;.Filter.Gt(p =&gt; p.Price, 10);
@@ -91,6 +94,7 @@ var result = await repo.GetAll(
     page: 1,
     pageSize: 20);
 </code></pre>
+<p>A single lambda that returns <code>bool</code> is a filter. Up to 12.2.0, <code>GetAll(p =&gt; p.Price &gt; 10)</code> bound to the sorting overload instead and returned every document, sorted by the predicate. The binding is fixed at compile time, so code compiled against 12.2.0 or earlier keeps that behaviour until it is recompiled against 12.3.0. To sort by a boolean, pass the expression as <code>sorting:</code>; <code>GetAll&lt;bool&gt;(p =&gt; p.IsActive)</code> is ambiguous until the obsolete generic filter overload is removed in v13.</p>
 <h2 id="getalldescending">GetAllDescending</h2>
 <p>Same as <code>GetAll</code> but with descending sort order:</p>
 <pre><code class="language-csharp">var newest = await repo.GetAllDescending(
@@ -98,6 +102,7 @@ var result = await repo.GetAll(
     page: 1,
     pageSize: 10);
 </code></pre>
+<p><code>GetAllDescending</code> always needs a sorting expression. Since 12.3.0, a call with only a predicate, <code>GetAllDescending(p =&gt; p.IsActive)</code>, is a compile error; code compiled against an earlier version keeps sorting by the predicate until it is recompiled. Instead, use <code>GetAllDescending(filter, sorting)</code>, or <code>GetAllDescending(sorting: p =&gt; p.IsActive)</code> to sort by the boolean itself.</p>
 <h2 id="count">Count</h2>
 <p>Count entities matching a filter:</p>
 <pre><code class="language-csharp">var total = await repo.Count(p =&gt; p.IsActive);

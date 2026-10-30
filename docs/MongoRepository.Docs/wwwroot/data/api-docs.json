@@ -111,6 +111,12 @@
         "description": ""
       },
       {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
         "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
@@ -124,6 +130,12 @@
       },
       {
         "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
@@ -248,13 +260,44 @@
         "name": "ReadWriteConnection",
         "kind": "Property",
         "type": "string",
-        "description": ""
+        "description": "Gets or sets the connection string used for read and write operations."
       },
       {
         "name": "ReadOnlyConnection",
         "kind": "Property",
         "type": "string",
+        "description": "Gets or sets the connection string used for read-only operations."
+      },
+      {
+        "name": "Serialization",
+        "kind": "Property",
+        "type": "MongoSerializationOptions",
+        "description": "Gets or sets the serialization conventions the library registers with the driver. Initialised to an instance whose switches are all off, so leaving it untouched keeps the driver\u0027s own behaviour. Setting it to null turns the automatic fallback in into a no-op and makes throw."
+      }
+    ]
+  },
+  {
+    "typeName": "MongoRepositoryConventions",
+    "fullName": "MongoRepository.MongoRepositoryConventions",
+    "description": "Registers the serialization conventions described by with the MongoDB driver.",
+    "members": [
+      {
+        "name": "Register(MongoDbOptions options)",
+        "kind": "Method",
+        "type": "void",
         "description": ""
+      },
+      {
+        "name": "Register(MongoSerializationOptions options)",
+        "kind": "Method",
+        "type": "void",
+        "description": ""
+      },
+      {
+        "name": "Unregister()",
+        "kind": "Method",
+        "type": "void",
+        "description": "Removes the registered convention pack and allows a later registration to take effect again."
       }
     ]
   },
@@ -306,6 +349,43 @@
         "kind": "Property",
         "type": "bool",
         "description": "If true: a missing (empty) connection string counts as a failure. If false: a missing connection string is treated as \u0027skipped\u0027 and does not degrade health (default)."
+      }
+    ]
+  },
+  {
+    "typeName": "MongoSerializationOptions",
+    "fullName": "MongoRepository.MongoSerializationOptions",
+    "description": "Selects which MongoDB serialization conventions the library registers, and which types they apply to. Every switch is off by default, so an application that does not set any of them keeps the driver\u0027s out-of-the-box behaviour.",
+    "members": [
+      {
+        "name": "IgnoreExtraElements",
+        "kind": "Property",
+        "type": "bool?",
+        "description": "Whether a stored document may carry fields the entity class does not declare."
+      },
+      {
+        "name": "IgnoreIfNull",
+        "kind": "Property",
+        "type": "bool?",
+        "description": "Whether properties that are null are left out of the stored document."
+      },
+      {
+        "name": "Namespaces",
+        "kind": "Property",
+        "type": "IList\u003Cstring\u003E",
+        "description": "The namespaces the conventions are limited to. Initialised so that the configuration binder fills it in place; setting it to null is treated as an empty list."
+      },
+      {
+        "name": "TypeFilter",
+        "kind": "Property",
+        "type": "Func\u003CType, bool\u003E",
+        "description": "An additional predicate that narrows the conventions to the types it accepts."
+      },
+      {
+        "name": "ConventionPackName",
+        "kind": "Property",
+        "type": "string",
+        "description": "The name the convention pack is registered under in the driver\u0027s convention registry."
       }
     ]
   },
@@ -363,6 +443,12 @@
         "description": ""
       },
       {
+        "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
         "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
@@ -376,6 +462,12 @@
       },
       {
         "name": "GetAll(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, Expression\u003CFunc\u003CTEntity, TProperty\u003E\u003E sorting, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
+        "kind": "Method",
+        "type": "Task\u003CList\u003CTEntity\u003E\u003E",
+        "description": ""
+      },
+      {
+        "name": "GetAllDescending(Expression\u003CFunc\u003CTEntity, bool\u003E\u003E filter, int? page, int? pageSize, IClientSessionHandle session, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CList\u003CTEntity\u003E\u003E",
         "description": ""
